@@ -14,6 +14,8 @@ Accounts, transactions, reconcile and the monthly summary.
   they differ.
 - **Transaction entry form** — type-dependent fields, with `toAmount` and
   `exchangeRate` appearing only when the backend actually requires them.
+- **Account detail** (`/accounts/:id`) — the account, its history over a
+  required date range, and the reconcile action.
 
 ## Decisions worth remembering
 
@@ -35,11 +37,17 @@ Accounts, transactions, reconcile and the monthly summary.
   embedded-category vs ids-only-account asymmetry is visible in one screen.
 - The range guard: an over-long window is caught before the request rather
   than after a 400.
+- Account history returns transfers on **both** sides: «Каспи Голд» shows the
+  incoming transfer from the soft-deleted account, so the page names both ends
+  rather than assuming the viewed account is the source.
 
 ## Open
 
-- Account detail (`/accounts/:id`) — history with a required date range, and
-  the reconcile action.
 - Add/edit account form, including the pick-or-create bank combobox.
-- Editing an existing transaction: restricted to amount, rate, date, category and note; deleting
-  reverses the balance and needs a confirm dialog.
+- Editing an existing transaction: amount, rate, date, category and note only.
+  `amountKzt` re-derives from the post-update state, so amount and rate can be
+  corrected together. ⚠ **`toAmount` is not patchable**, so editing the amount
+  of a cross-currency transfer would move the source side only and leave the
+  two sides implying a rate that no longer holds — decided: hide the amount
+  field there and direct to delete-and-recreate.
+- Deleting a transaction reverses the balance and needs a confirm dialog.
