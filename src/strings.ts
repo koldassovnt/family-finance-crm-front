@@ -45,6 +45,19 @@ export const strings = {
     empty: 'Пока ничего нет',
   },
 
+  dashboard: {
+    income: 'Доходы',
+    expense: 'Расходы',
+    net: 'Итого',
+    spent: 'Потрачено',
+    spendingByCategory: 'Расходы по категориям',
+    accounts: 'Счета',
+    budgets: 'Бюджеты за месяц',
+    billsDue: 'Ближайшие платежи',
+    nothingDue: 'Ничего не ожидается',
+    allCaughtUp: 'Просроченных платежей нет',
+  },
+
   accounts: {
     title: 'Счета',
     balance: 'Баланс',
