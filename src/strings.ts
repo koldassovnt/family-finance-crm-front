@@ -160,6 +160,23 @@ export const strings = {
     remaining: 'Остаток',
     /** An empty month is normal, not a missing-configuration state. */
     noneThisMonth: 'В этом месяце бюджетов не было',
+    add: 'Добавить бюджет',
+    addTitle: 'Новый бюджет',
+    editTitle: 'Изменить бюджет',
+    alertThreshold: 'Порог предупреждения, %',
+    /** Nothing alerts — the threshold only colours the bar. */
+    alertThresholdHint: 'Только цвет полосы — уведомления не отправляются',
+    /** A limit change applies from the current month, leaving history intact. */
+    editHint: 'Новый лимит действует с текущего месяца, прошлые месяцы сохранят прежний',
+    deleteTitle: 'Удалить бюджет?',
+    deleteHint: 'Бюджет перестанет действовать с текущего месяца, прошлые месяцы сохранят его',
+    created: 'Бюджет создан',
+    updated: 'Бюджет изменён',
+    deleted: 'Бюджет удалён',
+    duplicate: 'Для этой категории уже есть бюджет',
+    usageVsLimit: 'Расход и лимит',
+    /** Only EXPENSE categories can be budgeted. */
+    expenseOnly: 'Бюджет можно завести только для категории расходов',
   },
 
   goals: {
