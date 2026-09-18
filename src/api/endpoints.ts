@@ -104,11 +104,19 @@ export const transactionsApi = {
     request<Transaction[]>(`${V1}/transactions`, { query: params }),
   create: (body: CreateTransactionBody) =>
     request<Transaction>(`${V1}/transactions`, { method: 'POST', body }),
-  /** Amount, rate, date, category and note only. */
+  /**
+   * Amount, destination amount, rate, date, category and note only — type and
+   * both accounts are immutable.
+   *
+   * `toAmount` is valid only on a cross-currency transfer, and changing
+   * `amount` on one requires sending `toAmount` with it: each side then moves
+   * by its own figure in a single pass.
+   */
   update: (
     id: string,
     body: {
       amount?: number
+      toAmount?: number
       exchangeRate?: number
       occurredOn?: string
       categoryId?: string | null

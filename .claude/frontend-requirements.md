@@ -227,17 +227,21 @@ not something the API can serve.
       not the request's: a KZT transaction rejects any rate but 1. Show the
       field on the same rule as the create form — only when the transaction's
       currency isn't KZT.
-    - ⚠ **`toAmount` is not patchable**, and this bites exactly one case.
-      `UpdateTransactionRequest` has no such field, while a cross-currency
-      transfer credits its destination `toAmount ?: amount`. So editing
-      `amount` on a cross-currency transfer moves the **source side only** —
-      the destination keeps its old `toAmount`, and the two sides end up
-      implying a rate that no longer holds. Nothing errors; it goes quietly
-      inconsistent. **Decided: hide the amount field on a cross-currency
-      transfer and direct the user to delete and recreate.** A warning would
-      leave a silent corruption one click away, and this is a ledger. A
-      same-currency transfer edits safely, since the destination is credited
-      the same amount that was reversed and re-applied.
+    - **`toAmount` is patchable, and on a cross-currency transfer it travels
+      with `amount`.** This is server-enforced, not a convention:
+      - Changing `amount` on a cross-currency transfer **requires** `toAmount`
+        in the same request — 400 with a `toAmount` field error otherwise. Sent
+        together, each side moves by its own figure in one reverse/apply pass,
+        so the transaction is never half-corrected.
+      - `toAmount` alone is valid and corrects only the destination side.
+      - `toAmount` on anything else — a same-currency transfer, an income, an
+        expense — is a 400.
+      So the edit form presents the two fields together and submits them
+      together. Both rejections key their `fieldErrors` to `toAmount`, so they
+      land on the right input with no special handling.
+      - `amountKzt` re-derives from `amount` and `exchangeRate` only: it
+        describes the **source** movement, so correcting `toAmount` doesn't
+        touch it.
     - Future dates are rejected (today in `Asia/Almaty`); cap the date picker.
     - **`toAmount` is required when the two accounts' currencies differ and
       rejected when they match** — not "optional when they match". Show the
