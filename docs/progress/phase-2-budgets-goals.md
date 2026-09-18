@@ -17,11 +17,13 @@
   "no budget that month" empty state is real and reachable in one click.
 - `?month=2026-10` is a 400 with a `month` field error. The month selector
   disables stepping past the current month, so the request is never sent.
-- ⚠ **The amber state is not exercised by the current seed.** Amber needs
-  `alertThresholdPercent <= percentUsed < 100`, and the seeded rows are
-  «Продукты» 112.35% with threshold 80 (red), «Коммуналка» 85.5% with **no**
-  threshold (plain), «Транспорт» 34.67% with threshold 75 (plain). Setting
-  «Коммуналка» to a threshold of 80 would cover it.
+- All three bar states now have live data in September: «Транспорт» 34.67%
+  under its 75% threshold (normal), «Коммуналка» 85.5% past its 80% threshold
+  (amber), «Продукты» 112.35% over the limit with negative remaining and the
+  «Кофе» child rolled up (red). The amber row was added by PATCHing the
+  existing budget, which — being a version change from the current month —
+  means August reports that budget's older configuration. A threshold that
+  differs between the two months on the same row is the versioning working.
 
 ## Decisions worth remembering
 
