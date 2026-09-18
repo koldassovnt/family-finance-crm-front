@@ -189,6 +189,32 @@ export const strings = {
       ABANDONED: 'Отменённая',
       ARCHIVED: 'В архиве',
     },
+    types: {
+      SAVINGS: 'Накопления',
+      EMERGENCY_FUND: 'Подушка безопасности',
+    },
+    add: 'Добавить цель',
+    addTitle: 'Новая цель',
+    editTitle: 'Изменить цель',
+    name: 'Название',
+    targetAmount: 'Целевая сумма',
+    targetDate: 'Срок',
+    noTargetDate: 'Без срока',
+    linkedAccount: 'Счёт',
+    /** Fixed after creation: progress is measured against it. */
+    linkedAccountHint: 'Счёт нельзя изменить после создания — прогресс считается по его балансу',
+    status: 'Статус',
+    showAll: 'Показать все',
+    showActive: 'Только активные',
+    onlyActiveEmpty: 'Активных целей нет',
+    created: 'Цель создана',
+    updated: 'Цель изменена',
+    deleted: 'Цель удалена',
+    deleteTitle: 'Удалить цель?',
+    /** Progress is derived from the account balance, so nothing else is lost. */
+    deleteHint: 'Операции по счёту останутся — удаляется только сама цель',
+    /** Contributing is an ordinary transaction, not a separate endpoint. */
+    contributeHint: 'Пополнение — обычный перевод на связанный счёт',
   },
 
   bills: {
