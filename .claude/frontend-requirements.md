@@ -218,6 +218,26 @@ not something the API can serve.
     - Editing is restricted to amount, exchange rate, date, category and note.
       Changing the type or either account means delete and recreate, so the
       edit form must not offer those fields.
+    - **`amountKzt` is re-derived from the post-update state**, so amount and
+      rate can be corrected together or separately and the KZT figure follows.
+      Editing `amount` also reverses and re-applies the balance effect, and
+      only ever touches the accounts the transaction already has. A PATCH that
+      touches neither money field recomputes nothing.
+    - **`exchangeRate` is validated against the transaction's own currency**,
+      not the request's: a KZT transaction rejects any rate but 1. Show the
+      field on the same rule as the create form — only when the transaction's
+      currency isn't KZT.
+    - ⚠ **`toAmount` is not patchable**, and this bites exactly one case.
+      `UpdateTransactionRequest` has no such field, while a cross-currency
+      transfer credits its destination `toAmount ?: amount`. So editing
+      `amount` on a cross-currency transfer moves the **source side only** —
+      the destination keeps its old `toAmount`, and the two sides end up
+      implying a rate that no longer holds. Nothing errors; it goes quietly
+      inconsistent. **Decided: hide the amount field on a cross-currency
+      transfer and direct the user to delete and recreate.** A warning would
+      leave a silent corruption one click away, and this is a ledger. A
+      same-currency transfer edits safely, since the destination is credited
+      the same amount that was reversed and re-applied.
     - Future dates are rejected (today in `Asia/Almaty`); cap the date picker.
     - **`toAmount` is required when the two accounts' currencies differ and
       rejected when they match** — not "optional when they match". Show the
