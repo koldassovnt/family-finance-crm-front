@@ -1,0 +1,107 @@
+/**
+ * Every user-facing string lives here, not inline in JSX. The UI is Russian
+ * only and there is no i18n library — keeping them in one module means adding
+ * a second language later is a swap, not a rewrite.
+ */
+export const strings = {
+  appName: 'Семейные финансы',
+
+  nav: {
+    dashboard: 'Обзор',
+    accounts: 'Счета',
+    transactions: 'Операции',
+    budgets: 'Бюджеты',
+    goals: 'Цели',
+    bills: 'Платежи',
+    categories: 'Категории',
+    password: 'Смена пароля',
+    users: 'Пользователи',
+    logout: 'Выйти',
+  },
+
+  login: {
+    title: 'Вход',
+    email: 'Электронная почта',
+    password: 'Пароль',
+    submit: 'Войти',
+    submitting: 'Вход…',
+    invalidCredentials: 'Неверная почта или пароль',
+  },
+
+  common: {
+    loading: 'Загрузка…',
+    save: 'Сохранить',
+    cancel: 'Отмена',
+    delete: 'Удалить',
+    edit: 'Изменить',
+    add: 'Добавить',
+    confirm: 'Подтвердить',
+    retry: 'Повторить',
+    /** Shown when a transaction points at a soft-deleted account. */
+    deletedAccount: 'Удалённый счёт',
+    /** Summary rows with no category. */
+    uncategorized: 'Без категории',
+    error: 'Не удалось выполнить запрос',
+    empty: 'Пока ничего нет',
+  },
+
+  accounts: {
+    title: 'Счета',
+    balance: 'Баланс',
+    type: 'Тип',
+    bank: 'Банк',
+    reconcile: 'Сверить баланс',
+    noBank: 'Без банка',
+    types: {
+      CASH: 'Наличные',
+      BANK: 'Банковский счёт',
+      DEPOSIT: 'Депозит',
+      BROKER: 'Брокерский счёт',
+    },
+  },
+
+  transactions: {
+    title: 'Операции',
+    types: {
+      INCOME: 'Доход',
+      EXPENSE: 'Расход',
+      TRANSFER: 'Перевод',
+      ADJUSTMENT: 'Корректировка',
+    },
+    /** Deleting reverses the balance, so the dialog says so explicitly. */
+    deleteWarning: 'Баланс счёта будет пересчитан. Отменить это действие нельзя.',
+  },
+
+  budgets: {
+    title: 'Бюджеты',
+    limit: 'Лимит',
+    spent: 'Потрачено',
+    remaining: 'Остаток',
+    /** An empty month is normal, not a missing-configuration state. */
+    noneThisMonth: 'В этом месяце бюджетов не было',
+  },
+
+  goals: {
+    title: 'Цели',
+    target: 'Цель',
+    contribute: 'Пополнить',
+    achieved: 'Достигнута',
+    statuses: {
+      ACTIVE: 'Активная',
+      ABANDONED: 'Отменённая',
+      ARCHIVED: 'В архиве',
+    },
+  },
+
+  bills: {
+    title: 'Платежи',
+    dueDate: 'Срок',
+    overdue: 'Просрочен',
+    paid: 'Оплачен',
+    markPaid: 'Отметить оплаченным',
+    /** Marking paid does not create a transaction. */
+    markPaidHint: 'Операция в журнале не создаётся — внесите её отдельно',
+    unpaidPanel: 'К оплате',
+    deleteSeries: 'Удалить всю серию',
+  },
+} as const
