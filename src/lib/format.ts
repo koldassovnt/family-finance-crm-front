@@ -49,9 +49,15 @@ export function formatExchangeRate(value: number): string {
   }).format(value)
 }
 
-/** Percentages are not money and never go through the money formatter. */
+/**
+ * Percentages are not money and never go through the money formatter.
+ *
+ * One decimal, trailing zero trimmed: «125 %», «85,5 %». Rounding to whole
+ * numbers would print «100 %» for a budget at 99.6% — the exact figure that
+ * turns the bar red — so a budget would look overspent while it isn't.
+ */
 export function formatPercent(value: number): string {
-  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(value)} %`
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(value)} %`
 }
 
 /**

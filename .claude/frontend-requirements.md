@@ -67,8 +67,10 @@ All confirmed, not placeholders.
       a rate of `0.004821` would render as «0,00», which is wrong rather than
       merely rounded — show it at its own precision. `percentUsed` and
       `progressPercent` are percentages, not money, and must not go through the
-      money formatter; render them without decimals («125 %») unless a screen
-      has a reason to do otherwise.
+      money formatter; render them at **one decimal with the trailing zero
+      trimmed** («125 %», «85,5 %»). Not whole numbers: 99.6 would round to
+      «100 %», the exact figure that turns a budget bar red, so a budget would
+      read as overspent while it isn't.
     - **One shared formatter, used by every screen** — this rule lives in one
       module, not reimplemented per component. `Intl.NumberFormat('ru-RU', {
       minimumFractionDigits: 2, maximumFractionDigits: 2 })` gives the right
