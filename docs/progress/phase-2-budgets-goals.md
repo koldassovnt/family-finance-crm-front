@@ -8,6 +8,21 @@
 - **Month selector**, shared with the dashboard summary. Future months are
   unreachable rather than rejected on arrival. (`1a145f0`)
 
+- **`/budgets` page** — create, edit and delete, the shared month selector,
+  and a spent-vs-limit chart.
+
+## Verified against the running backend
+
+- `?month=2026-08` returns `[]` (the budgets start in September), so the
+  "no budget that month" empty state is real and reachable in one click.
+- `?month=2026-10` is a 400 with a `month` field error. The month selector
+  disables stepping past the current month, so the request is never sent.
+- ⚠ **The amber state is not exercised by the current seed.** Amber needs
+  `alertThresholdPercent <= percentUsed < 100`, and the seeded rows are
+  «Продукты» 112.35% with threshold 80 (red), «Коммуналка» 85.5% with **no**
+  threshold (plain), «Транспорт» 34.67% with threshold 75 (plain). Setting
+  «Коммуналка» to a threshold of 80 would cover it.
+
 ## Decisions worth remembering
 
 - **The bar clamps, the numbers don't.** `percentUsed` runs past 100 and
@@ -20,11 +35,6 @@
 
 ## Open
 
-- `/budgets` page proper: create, edit and delete, plus the usage chart.
-- Editing a limit takes effect from the current month onward and leaves history
-  intact — this needs UI copy, since "change the limit" reads as destructive.
-- A duplicate category returns 409 `DUPLICATE_BUDGET`, which the create form
-  should map onto the category field rather than a toast.
 - `/goals` entirely: cards with progress, status filtering (the API returns
   every status), and the contribute action — a pre-filled `TRANSFER` into the
   linked account, with the type left switchable.
