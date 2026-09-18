@@ -83,6 +83,19 @@ export const strings = {
     },
     /** Deleting reverses the balance, so the dialog says so explicitly. */
     deleteWarning: 'Баланс счёта будет пересчитан. Отменить это действие нельзя.',
+    from: 'С',
+    to: 'По',
+    account: 'Счёт',
+    category: 'Категория',
+    date: 'Дата',
+    amount: 'Сумма',
+    note: 'Заметка',
+    allAccounts: 'Все счета',
+    allCategories: 'Все категории',
+    /** The API caps the window at a year and 400s past it. */
+    rangeTooLong: 'Диапазон не может превышать один год',
+    rangeInverted: 'Дата начала позже даты окончания',
+    noneInRange: 'За выбранный период операций нет',
   },
 
   budgets: {
