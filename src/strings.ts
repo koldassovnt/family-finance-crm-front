@@ -64,6 +64,18 @@ export const strings = {
     type: 'Тип',
     bank: 'Банк',
     reconcile: 'Сверить баланс',
+    reconcileTitle: 'Сверка баланса',
+    actualBalance: 'Фактический баланс',
+    currentBalance: 'Баланс в системе',
+    difference: 'Разница',
+    /** The adjustment is a ledger row, not a silent balance edit. */
+    reconcileHint: 'Будет создана операция-корректировка на разницу',
+    reconcileNoChange: 'Баланс уже совпадает — корректировка не нужна',
+    reconciled: 'Баланс скорректирован',
+    history: 'История операций',
+    notFound: 'Счёт не найден',
+    /** Negative is legal — a signal that something is missing, not an error. */
+    negativeHint: 'Баланс отрицательный. Возможно, не внесена какая-то операция — сверьте баланс.',
     noBank: 'Без банка',
     types: {
       CASH: 'Наличные',
