@@ -8,7 +8,7 @@ import { strings } from '@/strings'
  * Styling only — nothing alerts anywhere in this system; the threshold is a
  * number the API returns for exactly this purpose.
  */
-export function budgetBarColor(budget: Budget): string {
+function budgetBarColor(budget: Budget): string {
   if (budget.percentUsed >= 100) return 'bg-destructive'
   if (budget.alertThresholdPercent !== null && budget.percentUsed >= budget.alertThresholdPercent) {
     return 'bg-amber-500'
