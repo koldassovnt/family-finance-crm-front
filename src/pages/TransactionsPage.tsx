@@ -4,6 +4,8 @@ import { accountsApi, categoriesApi, transactionsApi } from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
+import { DeleteTransactionDialog } from '@/components/transactions/DeleteTransactionDialog'
+import { EditTransactionDialog } from '@/components/transactions/EditTransactionDialog'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -44,6 +46,8 @@ export function TransactionsPage() {
   const [accountId, setAccountId] = useState<string>(ALL)
   const [categoryId, setCategoryId] = useState<string>(ALL)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editing, setEditing] = useState<Transaction | null>(null)
+  const [deleting, setDeleting] = useState<Transaction | null>(null)
 
   const invalidRange = rangeError(from, to)
 
@@ -77,6 +81,23 @@ export function TransactionsPage() {
         onOpenChange={setIsFormOpen}
         accounts={accounts.data ?? []}
         categories={categories.data ?? []}
+      />
+
+      {/* Keyed so the dialog's inputs reset when a different row is opened. */}
+      {editing !== null && (
+        <EditTransactionDialog
+          key={editing.id}
+          transaction={editing}
+          categories={categories.data ?? []}
+          open
+          onOpenChange={(next) => !next && setEditing(null)}
+        />
+      )}
+
+      <DeleteTransactionDialog
+        transaction={deleting}
+        open={deleting !== null}
+        onOpenChange={(next) => !next && setDeleting(null)}
       />
 
       {/* The range is mandatory, not a convenience: an unbounded "all
@@ -154,6 +175,7 @@ export function TransactionsPage() {
                   <TableHead>{strings.transactions.category}</TableHead>
                   <TableHead>{strings.transactions.account}</TableHead>
                   <TableHead className="text-right">{strings.transactions.amount}</TableHead>
+                  <TableHead className="w-24" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,6 +205,28 @@ export function TransactionsPage() {
                     </TableCell>
                     <TableCell>
                       <TransactionAmount transaction={transaction} />
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {/* ADJUSTMENT rows come from reconcile and are corrected
+                          by reconciling again, not edited by hand. */}
+                      {transaction.type !== 'ADJUSTMENT' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={strings.common.edit}
+                          onClick={() => setEditing(transaction)}
+                        >
+                          {strings.common.edit}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={strings.common.delete}
+                        onClick={() => setDeleting(transaction)}
+                      >
+                        {strings.common.delete}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

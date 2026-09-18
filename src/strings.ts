@@ -119,6 +119,14 @@ export const strings = {
     exchangeRateHint: 'Сколько тенге за 1 единицу валюты счёта',
     noCategory: 'Без категории',
     saved: 'Операция сохранена',
+    editTitle: 'Изменить операцию',
+    updated: 'Операция изменена',
+    deleteTitle: 'Удалить операцию?',
+    deleted: 'Операция удалена',
+    /** Type and both accounts are immutable on PATCH. */
+    immutableHint: 'Тип и счета изменить нельзя — удалите операцию и создайте заново',
+    /** The two sides of a cross-currency transfer must travel together. */
+    crossCurrencyHint: 'Обе суммы отправляются вместе, иначе стороны перевода разойдутся',
     errors: {
       amountPositive: 'Сумма должна быть больше нуля',
       amountInvalid: 'Введите сумму числом',
