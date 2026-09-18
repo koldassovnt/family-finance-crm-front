@@ -4,6 +4,7 @@ import type {
   Bank,
   Bill,
   Budget,
+  BudgetPeriod,
   Category,
   Goal,
   LoginResponse,
@@ -49,8 +50,16 @@ export const accountsApi = {
   /** 409 while an ACTIVE goal points at it. */
   remove: (id: string) => request<void>(`${V1}/accounts/${id}`, { method: 'DELETE' }),
   /** Writes an ADJUSTMENT for the difference; 400 when nothing drifted. */
-  reconcile: (id: string, body: { actualBalance: number; exchangeRate?: number; note?: string }) =>
-    request<Transaction>(`${V1}/accounts/${id}/reconcile`, { method: 'POST', body }),
+  reconcile: (
+    id: string,
+    body: {
+      actualBalance: number
+      exchangeRate?: number
+      note?: string
+      /** Defaults to today in Almaty. */
+      occurredOn?: string
+    },
+  ) => request<Transaction>(`${V1}/accounts/${id}/reconcile`, { method: 'POST', body }),
   /** `from`/`to` required, one year max. A transfer appears for both sides. */
   transactions: (id: string, from: string, to: string) =>
     request<Transaction[]>(`${V1}/accounts/${id}/transactions`, { query: { from, to } }),
@@ -116,8 +125,13 @@ export const transactionsApi = {
 export const budgetsApi = {
   /** Defaults to the current month; a future month is rejected. */
   list: (month?: string) => request<Budget[]>(`${V1}/budgets`, { query: { month } }),
-  create: (body: { categoryId: string; limitAmount: number; alertThresholdPercent?: number }) =>
-    request<Budget>(`${V1}/budgets`, { method: 'POST', body }),
+  /** `period` is required by the API even though MONTHLY is the only value. */
+  create: (body: {
+    categoryId: string
+    limitAmount: number
+    period: BudgetPeriod
+    alertThresholdPercent?: number
+  }) => request<Budget>(`${V1}/budgets`, { method: 'POST', body }),
   /** Takes effect from this month onward; past months keep their limit. */
   update: (id: string, body: { limitAmount?: number; alertThresholdPercent?: number | null }) =>
     request<Budget>(`${V1}/budgets/${id}`, { method: 'PATCH', body }),
