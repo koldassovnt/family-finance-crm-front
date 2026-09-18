@@ -10,6 +10,8 @@
 
 - **`/budgets` page** — create, edit and delete, the shared month selector,
   and a spent-vs-limit chart.
+- **`/goals` page** — cards with progress, status filtering, create/edit/delete,
+  and the contribute action.
 
 ## Verified against the running backend
 
@@ -25,6 +27,16 @@
   means August reports that budget's older configuration. A threshold that
   differs between the two months on the same row is the versioning working.
 
+- All four goal states are covered by the seed: ACTIVE with a target date,
+  ACTIVE and achieved with none, ARCHIVED, ABANDONED. The default view shows 2
+  of 4, so the filter has something to hide in both directions.
+- **The `MEMBER` role and the owner-only guard.** `member@example.com` returns
+  `role: MEMBER` from `/users/me`, so the client-side guard has real data to
+  act on, and `POST /users` as that user is a 403 `FORBIDDEN` — the server
+  enforces it independently, as it should. That account owns no accounts,
+  categories, budgets, goals or bills, since everything is per-owner, which
+  makes it a free tour of every empty state.
+
 ## Decisions worth remembering
 
 - **The bar clamps, the numbers don't.** `percentUsed` runs past 100 and
@@ -37,6 +49,4 @@
 
 ## Open
 
-- `/goals` entirely: cards with progress, status filtering (the API returns
-  every status), and the contribute action — a pre-filled `TRANSFER` into the
-  linked account, with the type left switchable.
+Nothing for this phase. Budgets and goals are both built.
