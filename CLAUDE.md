@@ -66,6 +66,11 @@ These are settled and verified against the backend source. Don't re-derive them.
 
 ## Working here
 
+- **Commit every logical change.** One commit per coherent piece, as it lands —
+  not one large commit at the end. Group by what the change *is*, not by which
+  files it touched, and put the reasoning in the body: why the 401 rule exempts
+  login, why money formats at exactly two decimals. That is what a reader needs
+  later; the diff already says what changed.
 - Run `npm run build` before reporting work done — `tsc -b` catches what the
   dev server doesn't.
 - Unbuilt screens use `<Placeholder>` and list the endpoints and rules their
