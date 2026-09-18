@@ -77,6 +77,19 @@ export const strings = {
     /** Negative is legal — a signal that something is missing, not an error. */
     negativeHint: 'Баланс отрицательный. Возможно, не внесена какая-то операция — сверьте баланс.',
     noBank: 'Без банка',
+    name: 'Название',
+    currency: 'Валюта',
+    openingBalance: 'Начальный баланс',
+    addTitle: 'Новый счёт',
+    add: 'Добавить счёт',
+    editTitle: 'Изменить счёт',
+    /** Only name and bank are patchable. */
+    editHint: 'Тип, валюту и баланс изменить нельзя — баланс меняется операциями и сверкой',
+    created: 'Счёт создан',
+    updated: 'Счёт изменён',
+    bankSearch: 'Найти или добавить банк',
+    bankNotFound: 'Банк не найден',
+    bankCreate: 'Добавить',
     types: {
       CASH: 'Наличные',
       BANK: 'Банковский счёт',
