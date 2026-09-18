@@ -4,7 +4,9 @@ import { accountsApi, categoriesApi, transactionsApi } from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
+import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -41,6 +43,7 @@ export function TransactionsPage() {
   const [to, setTo] = useState(todayInAlmaty)
   const [accountId, setAccountId] = useState<string>(ALL)
   const [categoryId, setCategoryId] = useState<string>(ALL)
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
   const invalidRange = rangeError(from, to)
 
@@ -64,7 +67,17 @@ export function TransactionsPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">{strings.transactions.title}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">{strings.transactions.title}</h1>
+        <Button onClick={() => setIsFormOpen(true)}>{strings.transactions.add}</Button>
+      </div>
+
+      <TransactionForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        accounts={accounts.data ?? []}
+        categories={categories.data ?? []}
+      />
 
       {/* The range is mandatory, not a convenience: an unbounded "all
           transactions" view is not something the API can serve. */}

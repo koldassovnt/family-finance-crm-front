@@ -96,6 +96,28 @@ export const strings = {
     rangeTooLong: 'Диапазон не может превышать один год',
     rangeInverted: 'Дата начала позже даты окончания',
     noneInRange: 'За выбранный период операций нет',
+    addTitle: 'Новая операция',
+    add: 'Добавить операцию',
+    type: 'Тип',
+    fromAccount: 'Счёт списания',
+    toAccount: 'Счёт зачисления',
+    toAmount: 'Сумма зачисления',
+    exchangeRate: 'Курс к тенге',
+    /** Shown under the rate input so the direction is unambiguous. */
+    exchangeRateHint: 'Сколько тенге за 1 единицу валюты счёта',
+    noCategory: 'Без категории',
+    saved: 'Операция сохранена',
+    errors: {
+      amountPositive: 'Сумма должна быть больше нуля',
+      amountInvalid: 'Введите сумму числом',
+      accountRequired: 'Выберите счёт',
+      toAccountRequired: 'Выберите счёт зачисления',
+      toAccountSame: 'Счета должны быть разными',
+      toAmountRequired: 'Укажите сумму зачисления — валюты счетов различаются',
+      exchangeRateRequired: 'Укажите курс — счёт не в тенге',
+      dateFuture: 'Дата не может быть в будущем',
+      noteTooLong: 'Не больше 1000 символов',
+    },
   },
 
   budgets: {
