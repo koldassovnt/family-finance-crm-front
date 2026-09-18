@@ -8,6 +8,12 @@ Accounts, transactions, reconcile and the monthly summary.
   no combined total, negatives in red. (`45ee260`)
 - **Monthly summary**, on the dashboard rather than its own route: income,
   expense, net, and spending by category. (`ba410e4`)
+- **Transactions list** (`/transactions`) — a mandatory date range, filters by
+  account and category, the account join with its «Удалённый счёт» fallback,
+  and amounts shown in their own currency with the KZT figure beneath when
+  they differ.
+- **Transaction entry form** — type-dependent fields, with `toAmount` and
+  `exchangeRate` appearing only when the backend actually requires them.
 
 ## Decisions worth remembering
 
@@ -20,17 +26,20 @@ Accounts, transactions, reconcile and the monthly summary.
   ranking magnitudes, and Russian category names are long. One series, one hue,
   no legend; the hue is validated against both light and dark surfaces.
 
+## Verified against the running backend
+
+- The deleted-account fallback, against a soft-deleted account seeded with
+  history: both referencing rows render, including the harder transfer case
+  where one side falls back and the other resolves («Удалённый счёт → Каспи
+  Голд»). The expense on the deleted account still shows its category, so the
+  embedded-category vs ids-only-account asymmetry is visible in one screen.
+- The range guard: an over-long window is caught before the request rather
+  than after a 400.
+
 ## Open
 
 - Account detail (`/accounts/:id`) — history with a required date range, and
   the reconcile action.
 - Add/edit account form, including the pick-or-create bank combobox.
-- **Transaction entry form** — the most involved screen in this phase:
-  fields change by type, `toAmount` appears only on a cross-currency transfer
-  and is rejected when currencies match, `exchangeRate` is mandatory for a
-  non-KZT account, the category picker filters by the type's kind, and
-  transfers carry no category at all.
-- Transactions list (`/transactions`) — needs the account join and the
-  «Удалённый счёт» fallback for soft-deleted accounts.
-- Editing is restricted to amount, rate, date, category and note; deleting
+- Editing an existing transaction: restricted to amount, rate, date, category and note; deleting
   reverses the balance and needs a confirm dialog.
