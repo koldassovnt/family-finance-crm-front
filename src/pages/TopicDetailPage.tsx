@@ -85,7 +85,7 @@ export function TopicDetailPage() {
   return (
     <section className="space-y-4">
       <QueryState query={detail}>
-        {({ topic, expenseByCategory }: TopicDetail) => (
+        {({ topic, expenseByCategory, incomeByCategory }: TopicDetail) => (
           <>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -158,6 +158,32 @@ export function TopicDetailPage() {
                 the monthly summary's CategorySummary shape precisely so this
                 doesn't need a second one. */}
             <SpendingByCategoryChart rows={expenseByCategory} />
+
+            {/* Income is usually one or two rows — a refund, a repayment — so
+                it gets a list rather than a second chart competing with the
+                expense one. Dropping it would hide why net is below spent. */}
+            {incomeByCategory.length > 0 && (
+              <Card>
+                <CardContent className="py-4">
+                  <p className="pb-2 text-sm font-medium">{strings.topics.received}</p>
+                  <ul className="divide-y">
+                    {incomeByCategory.map((row) => (
+                      <li
+                        key={row.categoryId ?? 'uncategorized'}
+                        className="flex justify-between gap-4 py-1.5 text-sm"
+                      >
+                        <span className="truncate">
+                          {row.categoryName ?? strings.common.uncategorized}
+                        </span>
+                        <span className="shrink-0 tabular-nums text-emerald-600 dark:text-emerald-400">
+                          {formatMoneyWithCurrency(row.total, 'KZT')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </QueryState>
