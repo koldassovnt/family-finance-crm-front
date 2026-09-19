@@ -92,6 +92,47 @@ export interface Transaction {
   note: string | null
 }
 
+export type TopicStatus = 'ACTIVE' | 'CLOSED'
+
+/**
+ * A topic with its derived totals. Every figure is computed on read and
+ * reported in **KZT** via `amountKzt`, so a trip paid partly in another
+ * currency is never a sum of mixed currencies.
+ */
+export interface Topic {
+  id: string
+  name: string
+  description: string | null
+  /**
+   * Metadata, not a constraint: a deposit paid months earlier or a refund
+   * arriving later may still be attached, so `firstTransactionOn` can fall
+   * outside this window. Don't render it as if it bounded the spending.
+   */
+  startDate: string | null
+  endDate: string | null
+  /** What you expected to spend, in KZT. Display only — nothing alerts. */
+  plannedAmount: number | null
+  status: TopicStatus
+  spent: number
+  /** Refunds and money repaid — income attached to the topic. */
+  received: number
+  /** spent - received: the honest cost. */
+  net: number
+  /** null when plannedAmount is unset; negative on overspend. */
+  remaining: number | null
+  transactionCount: number
+  /** The real span, often more informative than the declared dates. */
+  firstTransactionOn: string | null
+  lastTransactionOn: string | null
+}
+
+/** `GET /topics/{id}` — the breakdowns reuse the monthly summary's shape. */
+export interface TopicDetail {
+  topic: Topic
+  expenseByCategory: CategorySummary[]
+  incomeByCategory: CategorySummary[]
+}
+
 export interface CategorySummary {
   categoryId: string | null
   categoryName: string | null

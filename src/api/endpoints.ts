@@ -9,6 +9,8 @@ import type {
   Goal,
   LoginResponse,
   MonthlySummary,
+  Topic,
+  TopicDetail,
   Transaction,
   User,
 } from './types'
@@ -82,6 +84,48 @@ export const categoriesApi = {
   remove: (id: string) => request<void>(`${V1}/categories/${id}`, { method: 'DELETE' }),
 }
 
+export const topicsApi = {
+  /** Omit `status` for every topic; CLOSED ones still exist and still total. */
+  list: (status?: Topic['status']) => request<Topic[]>(`${V1}/topics`, { query: { status } }),
+  get: (id: string) => request<TopicDetail>(`${V1}/topics/${id}`),
+  create: (body: {
+    name: string
+    description?: string
+    startDate?: string
+    endDate?: string
+    plannedAmount?: number
+  }) => request<Topic>(`${V1}/topics`, { method: 'POST', body }),
+  update: (
+    id: string,
+    body: {
+      name?: string
+      description?: string | null
+      startDate?: string | null
+      endDate?: string | null
+      plannedAmount?: number | null
+      status?: Topic['status']
+    },
+  ) => request<Topic>(`${V1}/topics/${id}`, { method: 'PATCH', body }),
+  /** Soft delete. Transactions keep their link — a topic is a view. */
+  remove: (id: string) => request<void>(`${V1}/topics/${id}`, { method: 'DELETE' }),
+  /** Every attached row, newest first — membership is the bound, so no range. */
+  transactions: (id: string) => request<Transaction[]>(`${V1}/topics/${id}/transactions`),
+  /**
+   * Unattached INCOME/EXPENSE inside the topic's window, newest first.
+   * 400 when the topic has no dates — "everything you ever recorded" is not a
+   * candidate list. A suggestion, never an action.
+   */
+  candidates: (id: string) => request<Transaction[]>(`${V1}/topics/${id}/candidates`),
+  /** All-or-nothing: one bad id rejects the whole call. */
+  attach: (id: string, transactionIds: string[]) =>
+    request<Transaction[]>(`${V1}/topics/${id}/transactions`, {
+      method: 'POST',
+      body: { transactionIds },
+    }),
+  detach: (id: string, transactionId: string) =>
+    request<void>(`${V1}/topics/${id}/transactions/${transactionId}`, { method: 'DELETE' }),
+}
+
 export interface CreateTransactionBody {
   type: Exclude<Transaction['type'], 'ADJUSTMENT'>
   amount: number
@@ -94,13 +138,21 @@ export interface CreateTransactionBody {
   exchangeRate?: number
   /** Rejected for TRANSFER; must match the type's kind otherwise. */
   categoryId?: string
+  /** INCOME/EXPENSE only — a TRANSFER or ADJUSTMENT is rejected. */
+  topicId?: string
   occurredOn?: string
   note?: string
 }
 
 export const transactionsApi = {
   /** Cross-account list. `from`/`to` required, one year max, newest first. */
-  list: (params: { from: string; to: string; accountId?: string; categoryId?: string }) =>
+  list: (params: {
+    from: string
+    to: string
+    accountId?: string
+    categoryId?: string
+    topicId?: string
+  }) =>
     request<Transaction[]>(`${V1}/transactions`, { query: params }),
   create: (body: CreateTransactionBody) =>
     request<Transaction>(`${V1}/transactions`, { method: 'POST', body }),
@@ -120,6 +172,8 @@ export const transactionsApi = {
       exchangeRate?: number
       occurredOn?: string
       categoryId?: string | null
+      /** Explicit null detaches from its topic. */
+      topicId?: string | null
       note?: string | null
     },
   ) => request<Transaction>(`${V1}/transactions/${id}`, { method: 'PATCH', body }),
