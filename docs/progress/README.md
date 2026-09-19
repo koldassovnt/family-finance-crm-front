@@ -13,7 +13,7 @@ truth about the code.
 | [Foundation](00-foundation.md) | Tooling, API client, auth, formatting, shell | **Done** |
 | [Phase 0 + 1](phase-0-1-ledger.md) | Accounts, transactions, reconcile, summary | **Done** |
 | [Phase 2](phase-2-budgets-goals.md) | Budgets, goals | **Done** |
-| [Phase 4](phase-4-bills.md) | Bills, due-date calendar | Partial — dashboard only |
+| [Phase 4](phase-4-bills.md) | Bills, due-date calendar | **Done** |
 | [Phase 7](phase-7-topics.md) | Topics — a lens over the ledger | **Not started** — backend only |
 
 Phases 5–6 (investments, net worth) are out of scope; Phase 3 was dropped

@@ -2,6 +2,9 @@
 
 ## Built
 
+- **`/bills` page** — a month calendar grid with the unpaid panel beside it,
+  add/edit, mark-as-paid, batch create with a date preview, and delete for a
+  single row or a whole series.
 - **Bills panel on the dashboard** — overdue and due-soon, with the overdue
   badge carrying a word rather than relying on colour. (`111758e`)
 
@@ -20,13 +23,19 @@ Verified against the seeded data: the panel surfaces the overdue August bill
 and the two due this month, while the October–December rows of the same loan
 batch stay out.
 
+Also verified: the batch preview reproduces the backend's own expansion
+exactly. Day 31 over Sep–Dec gives 09-30, 10-31, 11-30, 12-31 — matching the
+seeded «Кредит на авто» rows — and Jan–Mar gives 02-28 for February.
+
+## Decisions worth remembering (page)
+
+- **The calendar is built from ISO strings, not Date objects.** `dueDate` is a
+  plain `yyyy-MM-dd` with no time or zone; parsing it into a Date would
+  reintroduce the browser's timezone into something the backend deliberately
+  keeps zone-free. Weeks start Monday.
+- The batch preview exists because the clamping rule is easy to state and hard
+  to believe until the actual dates are on screen.
+
 ## Open
 
-- `/bills` page: the month calendar grid, with the unpaid list beside it —
-  two calls, deliberately orthogonal.
-- Add/edit bill form, including the currency field.
-- Batch create: day-of-month clamps to a short month's last day, so the form
-  should preview the real dates; the API caps a batch at 120 rows.
-- "Mark as paid" sets a flag and creates no transaction — the UI has to say so,
-  or the ledger and the bills list quietly disagree.
-- Delete a whole series via `DELETE /bills/batch/{batchId}`.
+Nothing for this phase.
