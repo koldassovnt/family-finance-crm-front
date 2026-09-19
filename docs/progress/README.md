@@ -14,9 +14,11 @@ truth about the code.
 | [Phase 0 + 1](phase-0-1-ledger.md) | Accounts, transactions, reconcile, summary | In progress |
 | [Phase 2](phase-2-budgets-goals.md) | Budgets, goals | Partial — dashboard only |
 | [Phase 4](phase-4-bills.md) | Bills, due-date calendar | Partial — dashboard only |
+| [Phase 7](phase-7-topics.md) | Topics — a lens over the ledger | **Not started** — backend only |
 
 Phases 5–6 (investments, net worth) are out of scope; Phase 3 was dropped
-before any work started.
+before any work started. Phase 7 arrived on the backend after this frontend
+was underway and has not been scheduled here.
 
 ## Conventions for this log
 

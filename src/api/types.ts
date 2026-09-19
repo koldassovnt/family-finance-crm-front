@@ -51,6 +51,21 @@ export interface Category {
   parentId: string | null
 }
 
+/**
+ * A topic groups the transactions of one undertaking — a trip, a renovation —
+ * so it can be totalled on its own. It is a lens over the ledger, not a money
+ * concept, and it cuts across categories: a category says what the money was
+ * for, a topic says which occasion it belonged to.
+ *
+ * Embedded in a transaction like `category`, and like `category` it keeps
+ * resolving after the topic is soft-deleted.
+ */
+export interface TransactionTopic {
+  id: string
+  name: string
+  status: 'ACTIVE' | 'CLOSED'
+}
+
 export interface Transaction {
   id: string
   type: TransactionType
@@ -68,6 +83,12 @@ export interface Transaction {
   toAccountId: string | null
   /** Embedded in full, and keeps its name after the category is deleted. */
   category: Category | null
+  /**
+   * Null for every TRANSFER and ADJUSTMENT — those cannot belong to a topic,
+   * since attaching a transfer would count both the withdrawal and the thing
+   * it paid for.
+   */
+  topic: TransactionTopic | null
   note: string | null
 }
 
