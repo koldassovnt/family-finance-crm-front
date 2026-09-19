@@ -23,6 +23,7 @@ export const transactionFormSchema = z.object({
   toAmount: z.string().optional(),
   exchangeRate: z.string().optional(),
   categoryId: z.string().optional(),
+  topicId: z.string().optional(),
   occurredOn: z.string(),
   note: z.string().max(1000, { message: messages.noteTooLong }),
 })

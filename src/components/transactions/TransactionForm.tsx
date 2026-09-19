@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { transactionsApi, type CreateTransactionBody } from '@/api/endpoints'
-import type { Account, Category, TransactionType } from '@/api/types'
+import type { Account, Category, Topic, TransactionType } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,12 +32,15 @@ import {
 } from './transactionSchema'
 
 const NO_CATEGORY = 'none'
+const NO_TOPIC = 'none'
 
 interface TransactionFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   accounts: Account[]
   categories: Category[]
+  /** ACTIVE topics only — a closed one should stop cluttering daily entry. */
+  topics?: Topic[]
   /** Pre-fills the form — used by the goals page to contribute to a goal. */
   defaults?: Partial<TransactionFormValues>
 }
@@ -47,6 +50,7 @@ export function TransactionForm({
   onOpenChange,
   accounts,
   categories,
+  topics = [],
   defaults,
 }: TransactionFormProps) {
   const queryClient = useQueryClient()
@@ -61,6 +65,7 @@ export function TransactionForm({
       toAmount: '',
       exchangeRate: '',
       categoryId: NO_CATEGORY,
+      topicId: NO_TOPIC,
       occurredOn: todayInAlmaty(),
       note: '',
       ...defaults,
@@ -74,6 +79,7 @@ export function TransactionForm({
   const accountId = useWatch({ control, name: 'accountId' })
   const toAccountId = useWatch({ control, name: 'toAccountId' })
   const categoryId = useWatch({ control, name: 'categoryId' })
+  const topicId = useWatch({ control, name: 'topicId' })
 
   const source = accounts.find((account) => account.id === accountId)
   const destination = accounts.find((account) => account.id === toAccountId)
@@ -216,6 +222,30 @@ export function TransactionForm({
             </Field>
           )}
 
+          {/* Same show/hide rule as the category picker: a TRANSFER or
+              ADJUSTMENT cannot belong to a topic, since attaching a transfer
+              would count both the withdrawal and the thing it paid for. */}
+          {!isTransfer && (
+            <Field label={strings.topics.topicField}>
+              <Select
+                value={topicId ?? NO_TOPIC}
+                onValueChange={(value) => form.setValue('topicId', value ?? NO_TOPIC)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_TOPIC}>{strings.topics.noTopic}</SelectItem>
+                  {topics.map((topic) => (
+                    <SelectItem key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+
           <Field
             label={strings.transactions.date}
             error={form.formState.errors.occurredOn?.message}
@@ -254,8 +284,13 @@ function toRequestBody(values: TransactionFormOutput): CreateTransactionBody {
 
   if (values.type === 'TRANSFER') {
     body.toAccountId = values.toAccountId
-  } else if (values.categoryId !== undefined && values.categoryId !== NO_CATEGORY) {
-    body.categoryId = values.categoryId
+  } else {
+    if (values.categoryId !== undefined && values.categoryId !== NO_CATEGORY) {
+      body.categoryId = values.categoryId
+    }
+    if (values.topicId !== undefined && values.topicId !== NO_TOPIC) {
+      body.topicId = values.topicId
+    }
   }
 
   const toAmount = parseMoney(values.toAmount ?? '')

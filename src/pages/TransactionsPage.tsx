@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { accountsApi, categoriesApi, transactionsApi } from '@/api/endpoints'
+import { accountsApi, categoriesApi, topicsApi, transactionsApi } from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -45,6 +45,7 @@ export function TransactionsPage() {
   const [to, setTo] = useState(todayInAlmaty)
   const [accountId, setAccountId] = useState<string>(ALL)
   const [categoryId, setCategoryId] = useState<string>(ALL)
+  const [topicId, setTopicId] = useState<string>(ALL)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [deleting, setDeleting] = useState<Transaction | null>(null)
@@ -53,15 +54,26 @@ export function TransactionsPage() {
 
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list })
   const categories = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list })
+  // ACTIVE only for the entry form's picker; the filter below wants every
+  // topic, since you still look back at a finished trip.
+  const activeTopics = useQuery({
+    queryKey: ['topics', { showAll: false }],
+    queryFn: () => topicsApi.list('ACTIVE'),
+  })
+  const allTopics = useQuery({
+    queryKey: ['topics', { showAll: true }],
+    queryFn: () => topicsApi.list(),
+  })
 
   const transactions = useQuery({
-    queryKey: ['transactions', { from, to, accountId, categoryId }],
+    queryKey: ['transactions', { from, to, accountId, categoryId, topicId }],
     queryFn: () =>
       transactionsApi.list({
         from,
         to,
         accountId: accountId === ALL ? undefined : accountId,
         categoryId: categoryId === ALL ? undefined : categoryId,
+        topicId: topicId === ALL ? undefined : topicId,
       }),
     // Don't spend a request on a range the API will reject.
     enabled: invalidRange === null,
@@ -81,6 +93,7 @@ export function TransactionsPage() {
         onOpenChange={setIsFormOpen}
         accounts={accounts.data ?? []}
         categories={categories.data ?? []}
+        topics={activeTopics.data ?? []}
       />
 
       {/* Keyed so the dialog's inputs reset when a different row is opened. */}
@@ -159,6 +172,22 @@ export function TransactionsPage() {
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="topic">{strings.topics.topicField}</Label>
+          <Select value={topicId} onValueChange={(value) => setTopicId(value ?? ALL)}>
+            <SelectTrigger id="topic" className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{strings.topics.allTopics}</SelectItem>
+              {(allTopics.data ?? []).map((topic) => (
+                <SelectItem key={topic.id} value={topic.id}>
+                  {topic.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {invalidRange !== null ? (
@@ -191,6 +220,13 @@ export function TransactionsPage() {
                         {transaction.category?.name ??
                           strings.transactions.types[transaction.type]}
                       </span>
+                      {/* Embedded like the category, and like it keeps
+                          resolving after the topic is soft-deleted. */}
+                      {transaction.topic !== null && (
+                        <p className="truncate text-xs text-muted-foreground">
+                          {transaction.topic.name}
+                        </p>
+                      )}
                       {transaction.note !== null && (
                         <p className="truncate text-xs text-muted-foreground">
                           {transaction.note}
