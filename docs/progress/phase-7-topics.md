@@ -89,6 +89,12 @@ explicit null detaches), and `GET /transactions` accepts `&topicId=`.
 
 ## Seeded data
 
+**Figures below are a snapshot (2026-09-19), not constants.** Using the app
+changes them — a transaction recorded through the UI lands in these totals
+like any other. Treat them as "what the data looked like when this was
+written", and re-read the API rather than trusting them if something looks
+off.
+
 - «Малайзия 2026», ACTIVE, planned 400 000, 2026-09-01..09-16, 4 transactions,
   spent 169 912,7165, remaining 230 087,2835. One of the four is the USD
   subscription, so the total exercises cross-currency conversion via
@@ -102,7 +108,16 @@ explicit null detaches), and `GET /transactions` accepts `&topicId=`.
   **Its `firstTransactionOn` (2026-08-02) precedes its `startDate`
   (2026-08-15)** — flights booked two weeks early — which is exactly why the
   declared window and the real span are rendered separately.
+- **«Подготовка к школе», ACTIVE — the over-plan case.** Planned 100 000
+  against one 128 400,75 expense, so `remaining` is **−28 400,75** at 128.4% of
+  plan. Seeded additively by attaching an already-unattached September row, so
+  no other topic's totals moved and no summary or budget figure changed:
+  attaching a transaction changes nothing but its topic reference.
 - «Ремонт кухни», CLOSED, planned 900 000, nothing attached — an empty-state
   topic and the status filter in one.
 
-No topic has negative `remaining`, so the over-plan styling is unexercised.
+«Малайзия 2026» drifted from 4 rows to 5 (spent 169 912,7165 → 179 912,7165)
+when a 10 000 ₸ «Развлечения» expense dated 2026-09-19 was recorded through the
+UI. Nobody seeded it — which is the useful part: the row carries a matching
+category kind and an ACTIVE topic, so it is evidence the entry form and the
+topic picker work end to end.

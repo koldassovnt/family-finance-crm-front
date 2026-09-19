@@ -27,3 +27,10 @@ frontend was underway and was scheduled after bills.
   already covers what changed, and each commit body carries its own rationale.
 - Note anything verified against the running backend, and anything that is
   still only verified by `tsc`. The difference matters when picking up later.
+- **Date any figure taken from live data, and treat it as a snapshot.** Totals
+  move when someone uses the app — a figure recorded on Tuesday can be wrong on
+  Wednesday without anything being broken. Record what the number demonstrated,
+  not the number as a fact.
+- "Verified" here means checked against the running API and traced through the
+  code. Nothing in this log has been watched rendering in a browser; that
+  distinction is deliberate and worth keeping.
