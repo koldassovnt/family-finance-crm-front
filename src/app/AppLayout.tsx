@@ -55,7 +55,12 @@ export function AppLayout() {
             )}
           </nav>
           <div className="ms-auto flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{user?.displayName}</span>
+            <NavLink
+              to="/settings/password"
+              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {user?.displayName}
+            </NavLink>
             <Button variant="ghost" size="sm" onClick={signOut}>
               {strings.nav.logout}
             </Button>
