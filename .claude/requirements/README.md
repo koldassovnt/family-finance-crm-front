@@ -15,6 +15,7 @@ rather than repeating it.
 | [Phase 4 — Bills & due-date calendar](phase-4-bills-calendar.md) | Bills, calendar, batch create | Built |
 | [Phase 7 — Topics («События»)](phase-7-topics.md) | A lens over the ledger | Built |
 | [Settings](settings.md) | Category tree, password, user creation | Built |
+| [Phase 8 — Sharing](phase-8-sharing.md) | Per-resource read-only sharing between members | **Spec'd, not built** |
 | [Parked — phases 5 & 6](later/phases-5-6-parked.md) | Investments, net worth | Out of scope |
 
 Phase 3 was dropped before any work started — loans and mortgages are ordinary
