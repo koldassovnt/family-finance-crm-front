@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatMoneyWithCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { strings } from '@/strings'
-import { SpendingByCategoryChart } from './SpendingByCategoryChart'
+import { CategoryBarChart } from '@/components/charts/CategoryBarChart'
+import { CategoryPieChart } from '@/components/charts/CategoryPieChart'
 
 /**
  * Income vs expense for the month, always in KZT — the backend converts each
@@ -29,7 +30,28 @@ export function SummaryPanel({ month }: { month: string }) {
             <Tile label={strings.dashboard.expense} value={summary.totalExpense} />
             <Tile label={strings.dashboard.net} value={summary.net} signed />
           </div>
-          <SpendingByCategoryChart rows={summary.expenseByCategory} />
+          {/* Each side gets both views: the bar ranks the categories, the pie
+              shows what share of the month each one took. Income is charted
+              the same way so the two read as one screen — it is usually two
+              or three rows, and both charts return null when empty. */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CategoryBarChart
+              rows={summary.expenseByCategory}
+              title={strings.dashboard.spendingByCategory}
+            />
+            <CategoryPieChart
+              rows={summary.expenseByCategory}
+              title={strings.dashboard.expensesShare}
+            />
+            <CategoryBarChart
+              rows={summary.incomeByCategory}
+              title={strings.dashboard.incomeByCategory}
+            />
+            <CategoryPieChart
+              rows={summary.incomeByCategory}
+              title={strings.dashboard.incomeShare}
+            />
+          </div>
         </div>
       )}
     </QueryState>

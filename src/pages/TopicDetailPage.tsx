@@ -6,7 +6,7 @@ import { ApiError } from '@/api/client'
 import { accountsApi, topicsApi } from '@/api/endpoints'
 import type { TopicDetail, Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
-import { SpendingByCategoryChart } from '@/components/dashboard/SpendingByCategoryChart'
+import { CategoryBarChart } from '@/components/charts/CategoryBarChart'
 import { AttachCandidatesDialog } from '@/components/topics/AttachCandidatesDialog'
 import { TopicForm } from '@/components/topics/TopicForm'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -157,7 +157,10 @@ export function TopicDetailPage() {
             {/* The same chart the dashboard uses — the breakdown comes back in
                 the monthly summary's CategorySummary shape precisely so this
                 doesn't need a second one. */}
-            <SpendingByCategoryChart rows={expenseByCategory} />
+            <CategoryBarChart
+              rows={expenseByCategory}
+              title={strings.dashboard.spendingByCategory}
+            />
 
             {/* Income is usually one or two rows — a refund, a repayment — so
                 it gets a list rather than a second chart competing with the

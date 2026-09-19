@@ -11,18 +11,24 @@ import { formatMoney, formatMoneyWithCurrency } from '@/lib/format'
 import { strings } from '@/strings'
 
 /**
- * Spending by category, as a sorted horizontal bar in a single hue.
+ * Category totals as a sorted horizontal bar in a single hue.
  *
- * The reader's job here is comparing magnitudes, which is what a bar does and
- * a donut doesn't — arc lengths are hard to rank, and category names are long
- * enough in Russian that a pie legend would carry all the meaning anyway. One
- * series means one hue and no legend: the title names it.
+ * This is the ranking view: comparing magnitudes is what a bar does well and
+ * a pie does badly, since arc lengths are hard to order by eye. One series
+ * means one hue and no legend — the title names it. The pie beside it answers
+ * the other question, what share of the whole each category takes.
  */
 const chartConfig = {
   total: { label: strings.dashboard.spent, color: 'var(--chart-1)' },
 } satisfies ChartConfig
 
-export function SpendingByCategoryChart({ rows }: { rows: CategorySummary[] }) {
+export function CategoryBarChart({
+  rows,
+  title,
+}: {
+  rows: CategorySummary[]
+  title: string
+}) {
   if (rows.length === 0) return null
 
   const data = [...rows]
@@ -36,7 +42,7 @@ export function SpendingByCategoryChart({ rows }: { rows: CategorySummary[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{strings.dashboard.spendingByCategory}</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[320px] w-full">
