@@ -59,6 +59,57 @@ export const strings = {
     allCaughtUp: 'Просроченных платежей нет',
   },
 
+  categories: {
+    title: 'Категории',
+    add: 'Добавить категорию',
+    addTitle: 'Новая категория',
+    addChild: 'Добавить подкатегорию',
+    editTitle: 'Изменить категорию',
+    name: 'Название',
+    kind: 'Тип',
+    kinds: { EXPENSE: 'Расход', INCOME: 'Доход' },
+    /** Fixed at creation — a category's kind decides where it can be used. */
+    kindHint: 'Тип нельзя изменить после создания',
+    parent: 'Родительская категория',
+    noParent: 'Без родителя',
+    created: 'Категория создана',
+    updated: 'Категория изменена',
+    deleted: 'Категория удалена',
+    deleteTitle: 'Удалить категорию?',
+    /** History keeps pointing at it; only new use is prevented. */
+    deleteHint: 'Прошлые операции сохранят её название — она исчезнет только из списков выбора',
+    /** Both blocks come back as 409. */
+    blockedByChildren: 'Сначала удалите или перенесите подкатегории',
+    blockedByBudget: 'Категорию использует активный бюджет',
+    empty: 'Категорий пока нет',
+  },
+
+  password: {
+    title: 'Смена пароля',
+    current: 'Текущий пароль',
+    next: 'Новый пароль',
+    repeat: 'Повторите новый пароль',
+    submit: 'Сменить пароль',
+    mismatch: 'Пароли не совпадают',
+    tooShort: 'Не меньше 8 символов',
+    /** The change invalidates the token making the call. */
+    hint: 'После смены пароля все сеансы завершатся — потребуется войти заново',
+    done: 'Пароль изменён. Войдите заново',
+  },
+
+  users: {
+    title: 'Пользователи',
+    add: 'Создать пользователя',
+    email: 'Электронная почта',
+    displayName: 'Имя',
+    password: 'Пароль',
+    /** The endpoint can only create MEMBER; OWNER is rejected. */
+    roleHint: 'Новый пользователь получает роль «Член семьи»',
+    /** There is no list endpoint — the screen is create-only by design. */
+    noList: 'Список пользователей недоступен — можно только создать нового',
+    created: 'Пользователь создан',
+  },
+
   accounts: {
     title: 'Счета',
     balance: 'Баланс',
