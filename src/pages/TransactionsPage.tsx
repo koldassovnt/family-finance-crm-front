@@ -112,10 +112,15 @@ export function TransactionsPage() {
       {/* A grid, not flex-wrap with fixed widths: five fixed controls total
           more than 900px, so the last one dropped to a second line on any
           window narrower than a maximised laptop. The grid shares the width
-          instead and wraps in whole rows. */}
-      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        <div className="space-y-1">
-          <Label htmlFor="from">{strings.transactions.from}</Label>
+          instead and wraps in whole rows.
+
+          Aligned to the start, not the end: bottom-aligning makes any
+          difference in field height push that field's label out of line with
+          the others, which is the visible symptom. Top-aligning keeps every
+          label on one line whatever the control below it does. */}
+      <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="from" className="h-4">{strings.transactions.from}</Label>
           <Input
             id="from"
             type="date"
@@ -124,8 +129,8 @@ export function TransactionsPage() {
             onChange={(event) => setFrom(event.target.value)}
           />
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="to">{strings.transactions.to}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="to" className="h-4">{strings.transactions.to}</Label>
           <Input
             id="to"
             type="date"
@@ -135,8 +140,8 @@ export function TransactionsPage() {
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="account">{strings.transactions.account}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="account" className="h-4">{strings.transactions.account}</Label>
           <FieldSelect
             id="account"
             value={accountId}
@@ -151,8 +156,8 @@ export function TransactionsPage() {
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="category">{strings.transactions.category}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="category" className="h-4">{strings.transactions.category}</Label>
           <FieldSelect
             id="category"
             value={categoryId}
@@ -166,8 +171,8 @@ export function TransactionsPage() {
             ]}
           />
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="topic">{strings.topics.topicField}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="topic" className="h-4">{strings.topics.topicField}</Label>
           <FieldSelect
             id="topic"
             value={topicId}
