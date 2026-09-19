@@ -10,6 +10,8 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { GoalsPage } from '@/pages/GoalsPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PasswordPage } from '@/pages/PasswordPage'
+import { TopicDetailPage } from '@/pages/TopicDetailPage'
+import { TopicsPage } from '@/pages/TopicsPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
 import { UsersPage } from '@/pages/UsersPage'
 
@@ -28,6 +30,8 @@ export const router = createBrowserRouter([
           { path: '/budgets', element: <BudgetsPage /> },
           { path: '/goals', element: <GoalsPage /> },
           { path: '/bills', element: <BillsPage /> },
+          { path: '/topics', element: <TopicsPage /> },
+          { path: '/topics/:id', element: <TopicDetailPage /> },
           { path: '/settings/categories', element: <CategoriesPage /> },
           { path: '/settings/password', element: <PasswordPage /> },
           {

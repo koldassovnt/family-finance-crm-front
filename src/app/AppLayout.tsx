@@ -11,6 +11,7 @@ const navItems = [
   { to: '/budgets', label: strings.nav.budgets },
   { to: '/goals', label: strings.nav.goals },
   { to: '/bills', label: strings.nav.bills },
+  { to: '/topics', label: strings.nav.topics },
   { to: '/settings/categories', label: strings.nav.categories },
 ]
 
