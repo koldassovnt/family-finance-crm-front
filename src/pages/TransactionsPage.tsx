@@ -109,7 +109,11 @@ export function TransactionsPage() {
 
       {/* The range is mandatory, not a convenience: an unbounded "all
           transactions" view is not something the API can serve. */}
-      <div className="flex flex-wrap items-end gap-3">
+      {/* A grid, not flex-wrap with fixed widths: five fixed controls total
+          more than 900px, so the last one dropped to a second line on any
+          window narrower than a maximised laptop. The grid shares the width
+          instead and wraps in whole rows. */}
+      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="space-y-1">
           <Label htmlFor="from">{strings.transactions.from}</Label>
           <Input
@@ -118,7 +122,6 @@ export function TransactionsPage() {
             value={from}
             max={todayInAlmaty()}
             onChange={(event) => setFrom(event.target.value)}
-            className="w-40"
           />
         </div>
         <div className="space-y-1">
@@ -129,7 +132,6 @@ export function TransactionsPage() {
             value={to}
             max={todayInAlmaty()}
             onChange={(event) => setTo(event.target.value)}
-            className="w-40"
           />
         </div>
 
@@ -137,7 +139,6 @@ export function TransactionsPage() {
           <Label htmlFor="account">{strings.transactions.account}</Label>
           <FieldSelect
             id="account"
-            className="w-48"
             value={accountId}
             onChange={setAccountId}
             options={[
@@ -154,7 +155,6 @@ export function TransactionsPage() {
           <Label htmlFor="category">{strings.transactions.category}</Label>
           <FieldSelect
             id="category"
-            className="w-48"
             value={categoryId}
             onChange={setCategoryId}
             options={[
@@ -170,7 +170,6 @@ export function TransactionsPage() {
           <Label htmlFor="topic">{strings.topics.topicField}</Label>
           <FieldSelect
             id="topic"
-            className="w-48"
             value={topicId}
             onChange={setTopicId}
             options={[
