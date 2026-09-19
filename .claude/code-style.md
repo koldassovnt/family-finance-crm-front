@@ -37,6 +37,17 @@ match it rather than introducing a second dialect.
 - Every input has a `<Label htmlFor>`. Forms must be keyboard-navigable with
   visible focus — the app is used on a phone too.
 
+## Selects
+
+- **Always use `FieldSelect`, never `ui/select` directly.** This shadcn build
+  wraps **Base UI**, whose `Select.Value` renders the raw value and takes its
+  label from the root's `items` map. Using the primitives without that map puts
+  a UUID or an English enum member in the trigger — markup that looks correct
+  and reads wrong. `FieldSelect` derives the list and the label map from one
+  `options` array, so they cannot disagree.
+- More generally: this is Base UI, not Radix. Check the installed package
+  before copying a Radix-shaped pattern from memory or from the web.
+
 ## Styling
 
 - Tailwind utility classes. Compose conditionals with `cn()` from
