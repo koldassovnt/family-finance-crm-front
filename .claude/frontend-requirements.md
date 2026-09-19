@@ -446,6 +446,10 @@ unchanged.*
 
 ## Non-Functional Requirements
 
+- **Light theme only — no dark mode.** Decided 2026-09-19. shadcn's `.dark`
+  block stays vendored but inert: it needs a `.dark` class on `<html>`, and
+  nothing sets one. Don't add a toggle, and don't wire `prefers-color-scheme`,
+  without asking.
 - Responsive enough to use comfortably from a phone browser — the native
   Android app is a separate, longer-term project, so the web frontend should
   hold up on mobile in the meantime.

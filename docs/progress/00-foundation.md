@@ -48,10 +48,17 @@ The formatters were run against real seeded figures: `341063.4665` renders
 instead of collapsing to «0,00», and `parseMoney` round-trips our own output
 including its U+00A0 separator.
 
+## Decided against
+
+- **No dark mode.** The app is light-only by the user's decision (2026-09-19).
+  Nothing needs removing: shadcn's dark theme activates on a `.dark` class on
+  `<html>`, there is no toggle and no `prefers-color-scheme` rule, so the
+  vendored `.dark` block is inert. Leave it rather than churning every
+  component; if dark is ever wanted, adding the toggle is the whole job. The
+  chart hue already carries a validated dark step for the same reason.
+
 ## Open
 
 - **Nothing has been seen in a browser by the agent** — `tsc` and the data
   layer are verified, rendering is not.
-- **No dark-mode toggle.** shadcn's dark theme needs a `.dark` class on
-  `<html>` and nothing sets it, so the dark surface is unreachable in the UI.
 - No tests, and no test runner installed.
