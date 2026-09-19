@@ -44,18 +44,22 @@ Backend spec lives in the backend repo at
   never sends it — it says so up front instead.
 - A topic created and soft-deleted during testing left its transactions alone,
   as the spec promises.
+- «Турция 2026» drove out a real omission: the page rendered
+  `expenseByCategory` and dropped `incomeByCategory`, hiding the «Возвраты»
+  row that explains why net sits below spent. Fixed. Its out-of-window first
+  transaction and its eight USD rows are the data the declared-vs-actual span
+  and the per-row currency exist for.
 
-## What already reaches the frontend
+## How topics reach the transaction screens
 
-`TransactionResponse` now embeds `topic: {id, name, status} | null` beside
-`category` — confirmed against the running API, where 4 of 11 September rows
-carry «Малайзия 2026». The field is typed in `api/types.ts` so the
-transcription stays honest, but nothing renders it yet.
+`TransactionResponse` embeds `topic: {id, name, status} | null` beside
+`category`, so the list renders it with no join — and, like a category, it
+keeps resolving after the topic is soft-deleted.
 
-`POST`/`PATCH /transactions` accept `topicId` (absent-vs-null on PATCH), and
-`GET /transactions` accepts `&topicId=`.
+`POST`/`PATCH /transactions` accept `topicId` (absent-vs-null on PATCH, so an
+explicit null detaches), and `GET /transactions` accepts `&topicId=`.
 
-## Endpoints, if this gets built
+## Endpoints
 
 | Method | Path | Notes |
 |---|---|---|
@@ -89,5 +93,16 @@ transcription stays honest, but nothing renders it yet.
   spent 169 912,7165, remaining 230 087,2835. One of the four is the USD
   subscription, so the total exercises cross-currency conversion via
   `amountKzt`.
+- **«Турция 2026», ACTIVE — the one that exercises the hard cases.** 12
+  transactions, 8 USD at four different rates (479.10, 478.20, 477.85, 477.60)
+  and 4 KZT, so eight rows carry a currency that isn't the totals' currency on
+  the same screen. Planned 1 600 000, spent 1 075 155,3175, received 40 596,0
+  from a refunded excursion, net 1 034 559,3175, remaining 565 440,6825; four
+  expense categories and one income category.
+  **Its `firstTransactionOn` (2026-08-02) precedes its `startDate`
+  (2026-08-15)** — flights booked two weeks early — which is exactly why the
+  declared window and the real span are rendered separately.
 - «Ремонт кухни», CLOSED, planned 900 000, nothing attached — an empty-state
   topic and the status filter in one.
+
+No topic has negative `remaining`, so the over-plan styling is unexercised.
