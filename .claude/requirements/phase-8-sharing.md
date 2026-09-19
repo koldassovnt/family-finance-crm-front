@@ -113,6 +113,13 @@ Anything in between is a false promise. Whichever is chosen, the dialog must
 name the account explicitly: «Будет виден баланс счёта „Депозит“», not a
 vague note about progress.
 
+**Settled with the backend (`827def4`): option 1, binary.** The share dialog
+discloses the balance and names the account. The guard that comes with it:
+**if a percentage-only goal response is ever added for viewers, it must drop
+`targetAmount` too.** A percentage beside its target is the balance written
+in two numbers instead of one, and shipping that would reintroduce exactly
+the false promise this section rejects.
+
 ## Rendering a viewer's screens
 
 - **Reuse the normal detail pages** in viewer mode rather than building
