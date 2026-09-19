@@ -14,13 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { descendantIds } from '@/lib/categoryTree'
 import { strings } from '@/strings'
 
@@ -119,25 +113,18 @@ export function CategoryForm({
             {isEditing ? (
               <p className="text-sm">{strings.categories.kinds[category.kind]}</p>
             ) : (
-              <Select
+              <FieldSelect
                 value={kind}
-                onValueChange={(value) => {
-                  setKind((value ?? 'EXPENSE') as CategoryKind)
+                onChange={(value) => {
+                  setKind(value as CategoryKind)
                   // The old parent may belong to the other kind now.
                   setParentId(NO_PARENT)
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {KINDS.map((categoryKind) => (
-                    <SelectItem key={categoryKind} value={categoryKind}>
-                      {strings.categories.kinds[categoryKind]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={KINDS.map((categoryKind) => ({
+                  value: categoryKind,
+                  label: strings.categories.kinds[categoryKind],
+                }))}
+              />
             )}
             {!isEditing && (
               <p className="text-xs text-muted-foreground">{strings.categories.kindHint}</p>
@@ -146,19 +133,14 @@ export function CategoryForm({
 
           <div className="space-y-1.5">
             <Label>{strings.categories.parent}</Label>
-            <Select value={parentId} onValueChange={(value) => setParentId(value ?? NO_PARENT)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_PARENT}>{strings.categories.noParent}</SelectItem>
-                {parentOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FieldSelect
+              value={parentId}
+              onChange={setParentId}
+              options={[
+                { value: NO_PARENT, label: strings.categories.noParent },
+                ...parentOptions.map((option) => ({ value: option.id, label: option.name })),
+              ]}
+            />
             {fieldErrors.parentId !== undefined && (
               <p className="text-sm text-destructive">{fieldErrors.parentId}</p>
             )}

@@ -11,13 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import {
   Table,
   TableBody,
@@ -141,52 +135,52 @@ export function TransactionsPage() {
 
         <div className="space-y-1">
           <Label htmlFor="account">{strings.transactions.account}</Label>
-          <Select value={accountId} onValueChange={(value) => setAccountId(value ?? ALL)}>
-            <SelectTrigger id="account" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{strings.transactions.allAccounts}</SelectItem>
-              {(accounts.data ?? []).map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  {account.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FieldSelect
+            id="account"
+            className="w-48"
+            value={accountId}
+            onChange={setAccountId}
+            options={[
+              { value: ALL, label: strings.transactions.allAccounts },
+              ...(accounts.data ?? []).map((account) => ({
+                value: account.id,
+                label: account.name,
+              })),
+            ]}
+          />
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="category">{strings.transactions.category}</Label>
-          <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? ALL)}>
-            <SelectTrigger id="category" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{strings.transactions.allCategories}</SelectItem>
-              {(categories.data ?? []).map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FieldSelect
+            id="category"
+            className="w-48"
+            value={categoryId}
+            onChange={setCategoryId}
+            options={[
+              { value: ALL, label: strings.transactions.allCategories },
+              ...(categories.data ?? []).map((category) => ({
+                value: category.id,
+                label: category.name,
+              })),
+            ]}
+          />
         </div>
         <div className="space-y-1">
           <Label htmlFor="topic">{strings.topics.topicField}</Label>
-          <Select value={topicId} onValueChange={(value) => setTopicId(value ?? ALL)}>
-            <SelectTrigger id="topic" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{strings.topics.allTopics}</SelectItem>
-              {(allTopics.data ?? []).map((topic) => (
-                <SelectItem key={topic.id} value={topic.id}>
-                  {topic.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FieldSelect
+            id="topic"
+            className="w-48"
+            value={topicId}
+            onChange={setTopicId}
+            options={[
+              { value: ALL, label: strings.topics.allTopics },
+              ...(allTopics.data ?? []).map((topic) => ({
+                value: topic.id,
+                label: topic.name,
+              })),
+            ]}
+          />
         </div>
       </div>
 

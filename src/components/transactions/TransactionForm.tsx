@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { transactionsApi, type CreateTransactionBody } from '@/api/endpoints'
-import type { Account, Category, Topic, TransactionType } from '@/api/types'
+import type { Account, Category, Topic } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney, todayInAlmaty } from '@/lib/format'
 import { strings } from '@/strings'
 import {
@@ -133,19 +127,17 @@ export function TransactionForm({
           onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
         >
           <Field label={strings.transactions.type} error={form.formState.errors.type?.message}>
-            <Select
+            <FieldSelect
               value={type}
-              onValueChange={(value) => form.setValue('type', (value ?? 'EXPENSE') as TransactionType & ('INCOME' | 'EXPENSE' | 'TRANSFER'))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="EXPENSE">{strings.transactions.types.EXPENSE}</SelectItem>
-                <SelectItem value="INCOME">{strings.transactions.types.INCOME}</SelectItem>
-                <SelectItem value="TRANSFER">{strings.transactions.types.TRANSFER}</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) =>
+                form.setValue('type', value as 'INCOME' | 'EXPENSE' | 'TRANSFER')
+              }
+              options={[
+                { value: 'EXPENSE', label: strings.transactions.types.EXPENSE },
+                { value: 'INCOME', label: strings.transactions.types.INCOME },
+                { value: 'TRANSFER', label: strings.transactions.types.TRANSFER },
+              ]}
+            />
           </Field>
 
           <Field
@@ -203,22 +195,17 @@ export function TransactionForm({
           {/* A transfer carries no category at all and one is rejected. */}
           {!isTransfer && (
             <Field label={strings.transactions.category}>
-              <Select
+              <FieldSelect
                 value={categoryId ?? NO_CATEGORY}
-                onValueChange={(value) => form.setValue('categoryId', value ?? NO_CATEGORY)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>{strings.transactions.noCategory}</SelectItem>
-                  {selectableCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => form.setValue('categoryId', value)}
+                options={[
+                  { value: NO_CATEGORY, label: strings.transactions.noCategory },
+                  ...selectableCategories.map((category) => ({
+                    value: category.id,
+                    label: category.name,
+                  })),
+                ]}
+              />
             </Field>
           )}
 
@@ -227,22 +214,14 @@ export function TransactionForm({
               would count both the withdrawal and the thing it paid for. */}
           {!isTransfer && (
             <Field label={strings.topics.topicField}>
-              <Select
+              <FieldSelect
                 value={topicId ?? NO_TOPIC}
-                onValueChange={(value) => form.setValue('topicId', value ?? NO_TOPIC)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_TOPIC}>{strings.topics.noTopic}</SelectItem>
-                  {topics.map((topic) => (
-                    <SelectItem key={topic.id} value={topic.id}>
-                      {topic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => form.setValue('topicId', value)}
+                options={[
+                  { value: NO_TOPIC, label: strings.topics.noTopic },
+                  ...topics.map((topic) => ({ value: topic.id, label: topic.name })),
+                ]}
+              />
             </Field>
           )}
 
@@ -337,17 +316,14 @@ function AccountSelect({
   accounts: Account[]
 }) {
   return (
-    <Select value={value} onValueChange={(next) => onChange(next ?? '')}>
-      <SelectTrigger>
-        <SelectValue placeholder={strings.transactions.account} />
-      </SelectTrigger>
-      <SelectContent>
-        {accounts.map((account) => (
-          <SelectItem key={account.id} value={account.id}>
-            {account.name} · {account.currency}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <FieldSelect
+      value={value}
+      onChange={onChange}
+      placeholder={strings.transactions.account}
+      options={accounts.map((account) => ({
+        value: account.id,
+        label: `${account.name} · ${account.currency}`,
+      }))}
+    />
   )
 }

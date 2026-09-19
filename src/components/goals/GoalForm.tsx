@@ -14,13 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney } from '@/lib/format'
 import { strings } from '@/strings'
 
@@ -119,18 +113,14 @@ export function GoalForm({
           {!isEditing && (
             <div className="space-y-1.5">
               <Label>{strings.transactions.type}</Label>
-              <Select value={type} onValueChange={(value) => setType((value ?? 'SAVINGS') as GoalType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {GOAL_TYPES.map((goalType) => (
-                    <SelectItem key={goalType} value={goalType}>
-                      {strings.goals.types[goalType]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FieldSelect
+                value={type}
+                onChange={(value) => setType(value as GoalType)}
+                options={GOAL_TYPES.map((goalType) => ({
+                  value: goalType,
+                  label: strings.goals.types[goalType],
+                }))}
+              />
             </div>
           )}
 
@@ -141,18 +131,15 @@ export function GoalForm({
                 {goal.linkedAccount.name} · {goal.linkedAccount.currency}
               </p>
             ) : (
-              <Select value={accountId} onValueChange={(value) => setAccountId(value ?? '')}>
-                <SelectTrigger>
-                  <SelectValue placeholder={strings.goals.linkedAccount} />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name} · {account.currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FieldSelect
+                value={accountId}
+                onChange={setAccountId}
+                placeholder={strings.goals.linkedAccount}
+                options={accounts.map((account) => ({
+                  value: account.id,
+                  label: `${account.name} · ${account.currency}`,
+                }))}
+              />
             )}
             <p className="text-xs text-muted-foreground">{strings.goals.linkedAccountHint}</p>
           </div>
@@ -189,21 +176,14 @@ export function GoalForm({
           {isEditing && (
             <div className="space-y-1.5">
               <Label>{strings.goals.status}</Label>
-              <Select
+              <FieldSelect
                 value={status}
-                onValueChange={(value) => setStatus((value ?? 'ACTIVE') as GoalStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {GOAL_STATUSES.map((goalStatus) => (
-                    <SelectItem key={goalStatus} value={goalStatus}>
-                      {strings.goals.statuses[goalStatus]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => setStatus(value as GoalStatus)}
+                options={GOAL_STATUSES.map((goalStatus) => ({
+                  value: goalStatus,
+                  label: strings.goals.statuses[goalStatus],
+                }))}
+              />
               {fieldErrors.status !== undefined && (
                 <p className="text-sm text-destructive">{fieldErrors.status}</p>
               )}

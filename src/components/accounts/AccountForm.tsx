@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney } from '@/lib/format'
 import { strings } from '@/strings'
 import { BankCombobox } from './BankCombobox'
@@ -117,21 +111,14 @@ export function AccountForm({
             <>
               <div className="space-y-1.5">
                 <Label>{strings.accounts.type}</Label>
-                <Select
+                <FieldSelect
                   value={type}
-                  onValueChange={(value) => setType((value ?? 'BANK') as AccountType)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCOUNT_TYPES.map((accountType) => (
-                      <SelectItem key={accountType} value={accountType}>
-                        {strings.accounts.types[accountType]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(value) => setType(value as AccountType)}
+                  options={ACCOUNT_TYPES.map((accountType) => ({
+                    value: accountType,
+                    label: strings.accounts.types[accountType],
+                  }))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

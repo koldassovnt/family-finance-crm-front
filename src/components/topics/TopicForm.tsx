@@ -14,13 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney } from '@/lib/format'
 import { strings } from '@/strings'
 
@@ -171,21 +165,14 @@ export function TopicForm({
           {isEditing && (
             <div className="space-y-1.5">
               <Label>{strings.goals.status}</Label>
-              <Select
+              <FieldSelect
                 value={status}
-                onValueChange={(value) => setStatus((value ?? 'ACTIVE') as TopicStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((topicStatus) => (
-                    <SelectItem key={topicStatus} value={topicStatus}>
-                      {strings.topics.statuses[topicStatus]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => setStatus(value as TopicStatus)}
+                options={STATUSES.map((topicStatus) => ({
+                  value: topicStatus,
+                  label: strings.topics.statuses[topicStatus],
+                }))}
+              />
             </div>
           )}
         </div>

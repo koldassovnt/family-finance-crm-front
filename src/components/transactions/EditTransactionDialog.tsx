@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney, todayInAlmaty } from '@/lib/format'
 import { strings } from '@/strings'
 
@@ -183,19 +177,17 @@ export function EditTransactionDialog({
 
           {!isTransfer && (
             <EditField label={strings.transactions.category} error={fieldErrors.categoryId}>
-              <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? NO_CATEGORY)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>{strings.transactions.noCategory}</SelectItem>
-                  {selectableCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FieldSelect
+                value={categoryId}
+                onChange={setCategoryId}
+                options={[
+                  { value: NO_CATEGORY, label: strings.transactions.noCategory },
+                  ...selectableCategories.map((category) => ({
+                    value: category.id,
+                    label: category.name,
+                  })),
+                ]}
+              />
             </EditField>
           )}
 

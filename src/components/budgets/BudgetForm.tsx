@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney } from '@/lib/format'
 import { strings } from '@/strings'
 
@@ -127,18 +121,15 @@ export function BudgetForm({
               // Fixed after creation.
               <p className="text-sm">{budget.category.name}</p>
             ) : (
-              <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? '')}>
-                <SelectTrigger>
-                  <SelectValue placeholder={strings.transactions.category} />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectable.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FieldSelect
+                value={categoryId}
+                onChange={setCategoryId}
+                placeholder={strings.transactions.category}
+                options={selectable.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                }))}
+              />
             )}
             {!isEditing && (
               <p className="text-xs text-muted-foreground">{strings.budgets.expenseOnly}</p>
