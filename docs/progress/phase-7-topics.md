@@ -1,8 +1,8 @@
 # Phase 7 — Topics
 
-**Status: not started. Backend only.** No frontend work has been decided on
-or done; this file records what exists so the decision can be made with the
-facts rather than from the announcement.
+**Status: built.** Scheduled by the user after bills, and labelled
+**«Событие»** in the UI — «Тема» is the literal translation but reads oddly for
+a trip. The entity stays `Topic` in code.
 
 A topic groups the transactions of one undertaking — a trip, a renovation — so
 it can be viewed and totalled on its own. It adds no money concepts: every
@@ -13,6 +13,37 @@ across categories. A transaction can have both.
 
 Backend spec lives in the backend repo at
 `.claude/requirements/phase-7-topics.md` (commits 2379477, ca35706).
+
+## Built
+
+- **`/topics`** — cards with spent, received, net and planned-vs-remaining,
+  filtered server-side on `?status`.
+- **`/topics/:id`** — header figures, the dashboard's category chart reused
+  unchanged, the attached transactions with detach, and bulk attach.
+- **Topic picker** on the transaction entry form (ACTIVE only, hidden for
+  transfers) and a **topic filter** on `/transactions` (every topic).
+
+## Decisions worth remembering
+
+- **The declared window and the real span are shown separately.** A flight
+  booked two weeks early legitimately falls outside `startDate`, so rendering
+  the declared dates as though they bounded the spending would make correct
+  data look wrong.
+- **`received` is shown beside `spent`,** not just the gross — a refunded
+  booking otherwise makes a trip look more expensive than it was.
+- **Candidates start unchecked.** The date window is a weak signal, and the
+  endpoint is a suggestion, never an action.
+- The list filters server-side on `?status`, unlike goals, because it is a real
+  query parameter — no reason to fetch closed topics in order to hide them.
+
+## Verified against the running backend
+
+- `GET /transactions?topicId=` returns the four attached rows, one of them USD,
+  so a row's own currency and the KZT totals differ visibly on one screen.
+- `/candidates` on a dateless topic is a 400 keyed to `startDate`. The dialog
+  never sends it — it says so up front instead.
+- A topic created and soft-deleted during testing left its transactions alone,
+  as the spec promises.
 
 ## What already reaches the frontend
 
