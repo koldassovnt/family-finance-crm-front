@@ -15,6 +15,7 @@ truth about the code.
 | [Phase 2](phase-2-budgets-goals.md) | Budgets, goals | **Done** |
 | [Phase 4](phase-4-bills.md) | Bills, due-date calendar | **Done** |
 | [Phase 7](phase-7-topics.md) | Topics («События») — a lens over the ledger | **Done** |
+| [Settings](settings.md) | Category tree, password, user creation | **Done** |
 
 Phases 5–6 (investments, net worth) are out of scope; Phase 3 was dropped
 before any work started. Phase 7 arrived on the backend after this
