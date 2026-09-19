@@ -1,6 +1,7 @@
 /**
  * Display and parse helpers. Every rule here comes from
- * `.claude/frontend-requirements.md` — change it there first.
+ * `.claude/requirements/00-architecture-and-foundations.md` — change it there
+ * first.
  */
 
 export const APP_TIME_ZONE = 'Asia/Almaty'

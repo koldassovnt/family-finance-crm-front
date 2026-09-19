@@ -5,15 +5,16 @@ user in practice, talks to a Spring Boot/Kotlin backend.
 
 ## Where the truth lives
 
-- **`.claude/frontend-requirements.md`** — the spec. Screens, rules, decisions
-  and the traps worth knowing. Read it before building a screen; update it when
-  a decision changes.
+- **`.claude/requirements/`** — the spec, split by phase to mirror the
+  backend's. Start with `00-architecture-and-foundations.md`, then the phase
+  doc for the screen you're building. Update it when a decision changes.
 - **The backend repo** — `/Users/rockettech/IdeaProjects/personal/family-finance-crm`
   (`git@github.com:koldassovnt/family-finance-crm.git`). Not linked from here.
   Its DTOs at `src/main/kotlin/com/familyfinance/crm/dto/` are the authoritative
   API contract and outrank both docs. `service/*Impl.kt` answers "what blocks
   this action". Its `.claude/requirements/` holds the backend phase docs.
-- Backend phases 0/1, 2 and 4 are built. Phases 5–6 are out of scope.
+- Backend phases 0/1, 2, 4 and 7 are built. Phases 5–6 are out of scope;
+  phase 3 was dropped.
 
 ## Commands
 

@@ -1,14 +1,16 @@
-# Frontend Requirements — Family Finance CRM (React)
+# 00 — Architecture & Foundations
+
+Shared across every phase. Read this first; the phase docs reference it rather
+than repeating it.
 
 **Everything about the backend — the requirements docs and the source — lives
 in a different repo, with no link from this one:**
 `/Users/rockettech/IdeaProjects/personal/family-finance-crm`
 (`git@github.com:koldassovnt/family-finance-crm.git`).
 
-- Companion requirements: its `.claude/requirements/` (start with
-  `00-architecture-and-foundations.md`). The phases below map directly onto
-  that folder's phase docs. *These briefly lived in this repo and were moved
-  back — this doc is the only requirements file the frontend repo owns.*
+- Companion requirements: its own `.claude/requirements/` (start with its
+  `00-architecture-and-foundations.md`). The phase docs beside this one map
+  directly onto that folder's phase docs — same numbering, frontend view.
 - **The source is the authoritative contract.** When a response shape is in
   question, read the DTOs at `src/main/kotlin/com/familyfinance/crm/dto/` —
   they carry KDoc explaining intent and outrank both this doc and the
@@ -16,8 +18,8 @@ in a different repo, with no link from this one:**
   questions. Every API fact below was verified against that source, not
   inferred.
 
-**Backend status: Phases 0/1, 2 and 4 are built and running.** The API below
-is what the code actually exposes, not a plan. Verify against
+**Backend status: phases 0/1, 2, 4 and 7 are built and running.** The API
+described here is what the code actually exposes, not a plan. Verify against
 `/swagger-ui.html` (the running app documents every endpoint) before assuming
 a shape. The backend runs in Docker on port 8080 by default, CORS allows all
 origins, and auth is a bearer token, so a Vite dev server on another port
@@ -172,10 +174,17 @@ screen; everything else is drill-down.
 | `/settings/categories` | category management (tree)                                   |
 | `/settings/password` | change your own password — `POST /api/v1/users/me/password`, any role |
 | `/settings/users`  | `OWNER` only — create additional users (unused while single-user). Create-only: `GET /api/v1/users/me` returns just the caller and there is no list-users endpoint, so don't design a user table |
+| `/topics`          | «События» — undertakings with their totals                       |
+| `/topics/:id`      | one event: figures, category breakdown, attached transactions    |
 
-Charts (Recharts) appear on the dashboard and `/budgets`: spending by
-category for the month, and budget usage vs. limit. Deliberately few —
-the parked net-worth trend was the chart-heavy part.
+Charts (Recharts) appear on the dashboard, `/budgets` and `/topics/:id`:
+spending by category, and budget usage vs. limit. Deliberately few — the
+parked net-worth trend was the chart-heavy part.
+
+**Selects: always use `FieldSelect`, never `ui/select` directly.** The vendored
+components wrap Base UI, whose `Select.Value` renders the raw value and takes
+its label from the root's `items` map — so the primitives used bare put a UUID
+or an English enum member in the trigger. See `.claude/code-style.md`.
 
 ### The cross-account transaction list
 
@@ -195,194 +204,6 @@ detail page.
 
 The date-range pickers are mandatory: an unbounded "all transactions" view is
 not something the API can serve.
-
-## Pages / Views, by Phase
-
-### Phase 0 + 1 — Foundation & Ledger
-- Login screen
-- Accounts list + account detail
-- Add/edit account form. Account types as built: `CASH`, `BANK`, `DEPOSIT`,
-  `BROKER` (no card/loan/mortgage types). `CASH` has no bank; every other type
-  takes an optional bank picked from `GET /api/v1/banks`, which is a global
-  list — `POST /api/v1/banks` is find-or-create by name, so a combobox that
-  creates on the fly is the right control. Only `name` and `bankId` are
-  editable afterwards: type, currency and balance are fixed at creation, and
-  the balance moves only through transactions.
-- Transaction entry form (income / expense / transfer — form fields change
-  based on type; a transfer between differently-currencied accounts must show
-  a second `toAmount` input)
-    - **`exchangeRate` (KZT per 1 unit) is required whenever the account isn't
-      in KZT,** and must be absent or `1` when it is. Every total the backend
-      reports is KZT, derived from that rate, so this input is not optional
-      polish — a foreign-currency transaction cannot be saved without it.
-    - Editing is restricted to amount, exchange rate, date, category and note.
-      Changing the type or either account means delete and recreate, so the
-      edit form must not offer those fields.
-    - **`amountKzt` is re-derived from the post-update state**, so amount and
-      rate can be corrected together or separately and the KZT figure follows.
-      Editing `amount` also reverses and re-applies the balance effect, and
-      only ever touches the accounts the transaction already has. A PATCH that
-      touches neither money field recomputes nothing.
-    - **`exchangeRate` is validated against the transaction's own currency**,
-      not the request's: a KZT transaction rejects any rate but 1. Show the
-      field on the same rule as the create form — only when the transaction's
-      currency isn't KZT.
-    - **`toAmount` is patchable, and on a cross-currency transfer it travels
-      with `amount`.** This is server-enforced, not a convention:
-      - Changing `amount` on a cross-currency transfer **requires** `toAmount`
-        in the same request — 400 with a `toAmount` field error otherwise. Sent
-        together, each side moves by its own figure in one reverse/apply pass,
-        so the transaction is never half-corrected.
-      - `toAmount` alone is valid and corrects only the destination side.
-      - `toAmount` on anything else — a same-currency transfer, an income, an
-        expense — is a 400.
-      So the edit form presents the two fields together and submits them
-      together. Both rejections key their `fieldErrors` to `toAmount`, so they
-      land on the right input with no special handling.
-      - `amountKzt` re-derives from `amount` and `exchangeRate` only: it
-        describes the **source** movement, so correcting `toAmount` doesn't
-        touch it.
-    - Future dates are rejected (today in `Asia/Almaty`); cap the date picker.
-    - **`toAmount` is required when the two accounts' currencies differ and
-      rejected when they match** — not "optional when they match". Show the
-      input only on a cross-currency transfer and omit the key entirely
-      otherwise; sending a redundant value is a 400, not a no-op.
-    - **The category must match the type's kind**: an `EXPENSE` transaction
-      needs an `EXPENSE` category, `INCOME` needs `INCOME`. Filter the picker by
-      kind rather than letting the backend reject the mismatch — the list comes
-      back flat with a `kind` field on every row, so this is a client-side
-      filter, not another call.
-    - **`TRANSFER` and `ADJUSTMENT` carry no category at all** and one is
-      rejected if supplied. Hide the field for those types; don't send `null`
-      into a create body either (see the PATCH note — absent, not null).
-    - **Deleting a transaction reverses its balance effect** on both accounts
-      for a transfer. It is a soft delete, but the balance moves, so it needs a
-      confirm dialog rather than a one-click row action — this is the only
-      destructive action in the ledger that silently changes a number elsewhere
-      on screen.
-- Balance-correction ("reconcile") action on an account: enter the balance
-  your bank actually shows via `POST /api/v1/accounts/{id}/reconcile`, and the
-  backend writes the `ADJUSTMENT` for the difference. `ADJUSTMENT` is rejected
-  on the ordinary transaction endpoint, so this is the only route to one. It
-  400s when the balance already matches — show that as an ordinary message,
-  not an error state. A non-KZT account needs `exchangeRate` here too.
-- Negative balances are legal — show them in red rather than blocking entry
-- Transaction history per account (remember: a transfer shows up for both accounts involved, per the backend doc)
-- Monthly summary: income vs. expense, broken down by category —
-  `GET /api/v1/transactions/summary?month=2026-09`, defaulting to the current
-  Almaty month. Totals are **always KZT** regardless of account currency, and
-  `TRANSFER`/`ADJUSTMENT` are excluded. Uncategorised spending comes back with
-  a null `categoryId`/`categoryName`, so the chart needs a label for it.
-    - **Decided: this lives on the dashboard, not its own route.** It is a
-      single call and it is exactly the "this month at a glance" the dashboard
-      is specified as. Give the dashboard a month selector so past months are
-      reachable — the same control `/budgets` needs, which makes the two read
-      as one system. A separate reports page only earns its place with Phase
-      6's XLSX export, which is out of scope; if a drill-down is wanted before
-      then, mount the same component at a route rather than building a second
-      view.
-- Categories arrive as a **flat list with `parentId`** (`GET /api/v1/categories`,
-  `kind` is `EXPENSE` or `INCOME`) — build the tree client-side; there is no
-  nested endpoint.
-    - **Two things block a delete, both 409, and the UI should say which.** A
-      category with live sub-categories cannot be deleted (re-parent or delete
-      the children first), and neither can one whose budget still has an open
-      version (delete the budget first). Historical transactions **never** block
-      it — they keep the category and keep rendering its name.
-    - A `parent` must belong to the same owner, and kind is fixed by what the
-      category is for — the tree editor only needs to offer name and parent.
-
-### Phase 2 — Budgets & Goals
-- Budget list with progress bars per category — amber past `alertThresholdPercent`, red past 100% (styling only; no alerts exist)
-    - **Budgets are versioned by month, so `/budgets` needs a month selector.**
-      `GET /api/v1/budgets?month=2026-09` reports, per budget, the limit that
-      actually applied that month plus that month's usage. Past months are
-      readable; a **future month is rejected**, so don't let the picker offer
-      one. A budget that didn't exist yet is simply absent from that month.
-    - Editing a limit takes effect from the current month onward and leaves
-      history intact — worth a line of UI copy, since "change the limit" looks
-      destructive otherwise. Deleting stops it from this month on, and past
-      months still report it.
-    - `percentUsed` is **not capped at 100** and `remaining` goes **negative**
-      on overspend — clamp the bar width for display, but show the real
-      numbers. Usage rolls sub-category spending up into the parent.
-    - Response shape, verified against a live instance: `{id, category,
-      limitAmount, period, alertThresholdPercent, month, effectiveFrom,
-      effectiveTo, spent, remaining, percentUsed}`. `category` is the embedded
-      object, not an id. `month`/`effectiveFrom`/`effectiveTo` are **`yyyy-MM`
-      strings**, not dates, and `effectiveTo` is `null` while the limit is still
-      in force. A real overspend reads `spent: 62500.5000, remaining:
-      -12500.5000, percentUsed: 125.00` — note `percentUsed` comes back at
-      **scale 2** while money fields are scale 4. That is deliberate, not an
-      oversight: it's computed with an explicit `PERCENT_SCALE` and `HALF_UP`
-      rounding as a display percentage, whereas the money fields take scale 4
-      from their `numeric(19,4)` columns. Don't "fix" it.
-    - **An empty list is normal, not an error state.** Asking for a month before
-      a budget existed returns `[]` rather than a zero-usage row. The empty state
-      must read as "no budget that month", not "no budgets configured" — the
-      month selector makes this reachable in one click.
-    - One active budget per category: a duplicate returns 409 with code
-      `DUPLICATE_BUDGET`, which the create form should map onto the category
-      field rather than a generic toast.
-- Goal tracker cards: target amount, target date, progress %, linked account
-    - **There is no contribute action and no contribute endpoint.** Progress is
-      derived on read from the linked account's balance against the target, so
-      "contributing" means recording an ordinary transaction into that account.
-    - **Decided:** the card's contribute button opens the normal transaction
-      form pre-filled as a **`TRANSFER`** with `toAccountId` set to the linked
-      account, leaving the source account for the user to pick. Not an
-      `INCOME`: moving money from checking into savings is a transfer between
-      the family's own accounts, and filing it as income would double-count it
-      in the monthly summary, which sums income by category — the money was
-      already counted when it was earned. Leave the type switchable, since
-      money arriving from outside (a salary paid straight into the savings
-      account) genuinely is `INCOME`.
-    - Two wrinkles on that pre-filled transfer: differing currencies between
-      the source and linked accounts require `toAmount`, and a non-KZT source
-      account requires `exchangeRate`.
-    - `type` is `SAVINGS` or `EMERGENCY_FUND`; the linked account is **fixed
-      once set** (only name, target amount, target date and status are
-      editable). Several goals may share one account.
-    - `status` is user-set: `ACTIVE`, `ABANDONED`, `ARCHIVED`. There is no
-      `ACHIEVED` status — `achieved` is a derived boolean, so an achieved goal
-      still sits in whatever status the user left it in. `GET /api/v1/goals`
-      returns **every** status, so the page filters client-side; default to
-      active and tuck the rest behind a toggle.
-    - `progressPercent` is clamped to 0–100 (unlike budgets).
-
-### Phase 4 — Bills & Due-Date Calendar
-*(Phase 3 was dropped — loans/mortgages are just expense categories now.)*
-- Calendar view (month) of bills — `GET /api/v1/bills?month=2026-09`. A row is
-  `{id, name, amount, currency, dueDate, isPaid, overdue, batchId}`.
-- **`overdue` is a server-computed boolean on every row — never derive it
-  client-side.** It's `!isPaid && dueDate < today` evaluated in `Asia/Almaty`,
-  so recomputing it from the browser's clock would disagree with the server for
-  anyone in another timezone, and near midnight even in Almaty. Read the field.
-- **An unpaid list alongside the calendar, not just the calendar.**
-  `?unpaid=true` returns everything still owed *including bills that fell due
-  in earlier months*, which a month grid structurally cannot show. Without it,
-  an overdue bill disappears the moment the user pages to the next month. The
-  two filters combine, and omitting both returns every bill.
-    - **`unpaid=true` is "still owed", not "late".** It includes future due
-      dates, so a dashboard attention panel must filter on `overdue` itself
-      rather than treating the unpaid list as an arrears list.
-- "Mark as paid" toggle (`PATCH` with `isPaid`) — sets a flag only, does not
-  create a transaction. Say so in the UI, or the ledger and the bills list
-  quietly disagree.
-- Add/edit bill form: name, amount, due date, currency (defaults to KZT)
-- Batch-create form for recurring bills: name, amount, day of month, start
-  and end month as `yyyy-MM` (e.g. "Loan payment, the 15th, Sep–Dec") —
-  creates the rows in one call; they're independent bills afterward. A day of
-  month too long for a short month is **clamped to that month's last day**, so
-  the preview should show the real dates. Rows share a `batchId`, and
-  `DELETE /api/v1/bills/batch/{batchId}` removes the whole series at once —
-  worth a "delete all in this series" action next to the single-bill delete.
-
-*Phases 5–6 (investments, net worth) are **out of current scope** — see
-`phase-5-investments.md` and `phase-6-net-worth.md` in the backend repo's
-requirements folder. The
-screens sketched for them previously are parked below the API conventions,
-unchanged.*
 
 ## API Integration Conventions
 
@@ -455,18 +276,3 @@ unchanged.*
   hold up on mobile in the meantime.
 - Basic accessibility: labeled form fields, keyboard-navigable forms, visible
   focus states.
-
----
-
-## Parked — out of current scope (Phases 5–6)
-
-### Phase 5 — Investment Portfolio
-- Holdings list with current valuation, unrealized gain/loss
-- Allocation breakdown chart (by asset class / instrument)
-- Manual trade entry form (buy/sell)
-- Manual price-update form per instrument (no automatic feed — see backend doc)
-
-### Phase 6 — Net Worth Dashboard
-- This becomes the home/landing screen once it exists
-- Total-assets trend chart over time (cash + investments; label it "Total Assets", not "Net Worth" — debts aren't tracked, see the backend Phase 6 doc)
-- Consolidated at-a-glance view pulling from every other page

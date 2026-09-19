@@ -3,7 +3,7 @@
 What has actually been built, phase by phase, and what is still open.
 
 The phases mirror the backend's, so a line here maps onto a section of
-`.claude/frontend-requirements.md` and onto the matching phase doc in the
+`.claude/requirements/` and onto the matching phase doc in the
 backend repo. **This log records what happened; the spec records what should
 happen.** When they disagree, the spec is the intent and this file is the
 truth about the code.
