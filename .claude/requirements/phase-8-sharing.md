@@ -162,10 +162,33 @@ display name onto the share would only paper over a broken association.
 Dropping the restriction from `User` isn't available either: it is what stops
 a deleted member authenticating, and the JWT filter depends on it.
 
-**The rule: deleting a member must soft-delete their shares in the same
-transaction, in both directions** — those they granted and those granted to
-them. That keeps every share row resolvable, and it is what anyone would
-expect anyway: a member removed from the household loses access.
+### It is not only `Share` — every shareable thing has the same association
+
+Confirmed in the backend source, and written into its spec as `827def4`. All
+six declare `owner` as `@ManyToOne(optional = false)` onto `User` —
+`Account`, `Goal`, `Budget`, `Bill`, `Topic`, and `Category` too. The problem
+is the ownership edge itself, not the share row.
+
+**Why this has never fired:** nothing dereferences `owner` for its fields
+today. Across every service it is only assigned, or compared for an ownership
+check (`goal.owner != owner`, `GoalServiceImpl.kt:98`), and `dto/Mappers.kt`
+does not mention `owner` at all. The owner is always the caller — who cannot
+be soft-deleted, or they would not have authenticated past
+`JwtAuthenticationFilter`. **Phase 8's `owner: {id, displayName}` is the
+first reader in the system that resolves an owner who is not the requester.**
+That is what turns a dormant association into a 500.
+
+**The rule, as landed with the backend:** a user delete must leave **no
+resolvable path from a live row to their `User`**. In practice their
+resources go with their shares. Revoking grants clears `Share` rows and does
+**not** touch ownership — two separate obligations, and doing only the first
+still leaves every account, goal, budget, bill, topic and category they owned
+pointing at a `User` Hibernate will refuse to load.
+
+**The case worth testing** is a viewer reading a resource whose owner was
+removed. Not an owner reading a grant to someone removed: revoke-on-delete
+makes the soft-deleted grantee unreachable, so that path is already closed by
+the rule above.
 
 There is **no user-delete endpoint today**, so this is a constraint on
 whoever adds one rather than work for this phase. It is written down here so
