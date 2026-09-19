@@ -144,11 +144,34 @@ vague note about progress.
 - «Доступно для просмотра» — the read-only marker
 - «Другой счёт» — an account the viewer cannot resolve
 
-## Open questions for whoever builds this
+## Deleting a member breaks shares unless it revokes them
 
-- Does `GET /api/v1/users` return soft-deleted members? The backend says no,
-  but a share granted to someone since deleted still exists — the outgoing
-  list needs a name for them, or it shows a share with nobody in it.
+Raised as an open question here; **answered, and the answer is sharper than
+the question.** Verified in the backend source: `User` carries
+`@SQLRestriction("is_deleted = false")`, unlike `Category`, `Topic`, `Account`
+and `Budget`, which deliberately don't.
+
+That restriction applies to relationship loading. A `Share` holds a
+**non-nullable** association to its grantee and to its owner, so once either
+is soft-deleted, Hibernate refuses to return the row the association points
+at. The outgoing list wouldn't render a share with a blank name — **it would
+fail when it read that share**. A 500, not a cosmetic gap.
+
+So the frontend cannot fix this with a fallback label, and denormalising the
+display name onto the share would only paper over a broken association.
+Dropping the restriction from `User` isn't available either: it is what stops
+a deleted member authenticating, and the JWT filter depends on it.
+
+**The rule: deleting a member must soft-delete their shares in the same
+transaction, in both directions** — those they granted and those granted to
+them. That keeps every share row resolvable, and it is what anyone would
+expect anyway: a member removed from the household loses access.
+
+There is **no user-delete endpoint today**, so this is a constraint on
+whoever adds one rather than work for this phase. It is written down here so
+it isn't rediscovered as a 500 in production.
+
+## Open questions for whoever builds this
 - `scope=SHARED` exists and this spec doesn't use it: `/shares/incoming`
   already returns everything across the five types in one call, which is what
   the «Доступно мне» screen needs. If that turns out to lack a field the screen
