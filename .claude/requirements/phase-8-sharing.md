@@ -55,10 +55,11 @@ they simply cannot act on it.
 
 The server rejects every write regardless. The UI's job is to not offer them.
 
-### 2. A separate «Доступно мне» screen — not mixed lists
+### 2. A separate «Общий доступ» screen — not mixed lists
 
 **Decided: keep `scope=OWN` everywhere it is already used, and put shared
-things on their own screen**, built from `GET /api/v1/shares/incoming`.
+things on their own screen**, whose incoming tab is driven by
+`GET /api/v1/shares/incoming`.
 
 The temptation is `scope=ALL` on `/accounts`, badging the rows. Reject it,
 because of the rule the backend states plainly: **a shared resource
@@ -71,12 +72,44 @@ would add up the column, disagree with their own dashboard, and be right to.
 One screen where *nothing* counts toward your totals is honest; a mixed list
 where *some* rows do is not. So:
 
-- `/shared` — «Доступно мне», grouped by resource type, each row badged with
-  its owner, linking to that resource's normal detail page in viewer mode.
+- `/shared` — «Общий доступ», with «Доступно мне» and «Чем я делюсь» as its two
+  tabs. The incoming tab is grouped by resource type and each row names its
+  owner.
 - Existing lists keep their current behaviour, unchanged, with no `scope`
   parameter sent. Nothing already built alters its meaning.
 - Revisit mixed lists only if the "never mixes into totals" rule ever changes —
   which it should not.
+
+#### Each group shows the resource, not the share row
+
+**`/shares/incoming` decides which groups appear; the figures come from the
+resources themselves**, fetched per present type with `scope=SHARED`.
+
+The first build rendered accounts and topics as a name plus an owner badge,
+on the reasoning that they have detail pages to link to. That was the wrong
+cut. A share grants a read over the *whole* resource, so a row that withholds
+the balance is not being careful — the balance is one click away on the page
+that row links to. It is just a screen that says nothing, sitting beside
+budgets and goals that show real numbers.
+
+So each group renders what its owner sees: an account with its type, bank and
+balance; a topic through the same card `/topics` uses, with spent, received,
+net, plan, remaining and the real span; a goal's progress; a budget's bar; a
+bill with its due date and `overdue`.
+
+**Reuse the owner's own components** — `TopicCard`, `GoalCard`, `BudgetBar` —
+rather than shared-screen variants. Same reason viewer mode reuses the detail
+pages: a second rendering of the same figures drifts, and the one used less
+often drifts faster.
+
+Two consequences worth keeping:
+
+- **Accounts and topics still link to their detail pages.** The row is a
+  summary, not a replacement — the history and the attached transactions live
+  there.
+- **A shared budget needs a month selector**, like the owned list. A budget is
+  a per-month figure, and an implicit month looks like "always" while meaning
+  "this month".
 
 ---
 
@@ -232,10 +265,16 @@ number the viewer is handed. Name the account.
 
 - «Участники семьи» — the member list
 - «Поделиться» — the action
-- «Доступно мне» — incoming shares
-- «Чем я делюсь» — outgoing shares
+- «Общий доступ» — the sharing screen itself, and its nav entry
+- «Доступно мне» — incoming shares, a tab within it
+- «Чем я делюсь» — outgoing shares, the other tab
 - «Доступно для просмотра» — the read-only marker
+- «владелец: …» — the owner, on the marker and on each shared row
+- «Выберите участника» — the picker's own text, which must not repeat its label
 - «Другой счёт» — an account the viewer cannot resolve
+
+The screen and its first tab must not share a name. «Доступно мне» as both the
+heading and the tab beneath it reads as a rendering fault.
 
 ## Deleting a member breaks shares unless it revokes them
 
@@ -287,10 +326,17 @@ There is **no user-delete endpoint today**, so this is a constraint on
 whoever adds one rather than work for this phase. It is written down here so
 it isn't rediscovered as a 500 in production.
 
-## Open questions for whoever builds this
-- `scope=SHARED` exists and this spec doesn't use it: `/shares/incoming`
-  already returns everything across the five types in one call, which is what
-  the «Доступно мне» screen needs. Confirmed against the built API — the row
-  carries `resourceName` and `owner`, which is the whole screen. If it ever
-  turns out to lack a field, prefer fixing the incoming payload over fanning
-  out five `scope=SHARED` calls.
+## Resolved while building
+
+- **`scope=SHARED` is used after all, and `/shares/incoming` is still the
+  right entry point.** This spec originally proposed incoming alone, reasoning
+  that a row carrying `resourceName` and `owner` "is the whole screen". It
+  isn't: that produces a list of labels next to sections showing real figures.
+  The two answer different questions and both are needed — incoming says *what
+  is shared and by whom* in one call, and `scope=SHARED` supplies the figures
+  for the types actually present. What the original note got right is the part
+  worth keeping: don't fan out five `scope=SHARED` calls to discover what
+  exists, when one call already says so.
+- **Not `scope=ALL`.** It returns owned rows first, then shared, each group
+  sorted by name — not one sorted list. Nothing here needs it: the owned lists
+  send no `scope` and this screen wants only what others share.
