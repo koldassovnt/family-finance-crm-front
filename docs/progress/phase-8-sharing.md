@@ -25,12 +25,17 @@ budget, bill or topic, opened to one person at a time.
   `VIEWER`. The backend keeps them apart with an exhaustive `asAccessLevel()`,
   and merging them here would compile today and be wrong the day `EDITOR`
   exists — `OWNER` is not something a share can confer.
-- **A goal's `linkedAccount` is typed `AccountSummary`, deliberately without
-  `access`/`owner`.** The backend builds nested accounts with the plain mapper,
-  so those fields carry the DTO's defaults rather than a fact about the caller.
-  Verified live: a viewer reading the shared goal gets
-  `linkedAccount.access === "OWNER"` for an account that 404s for them. The
-  fields are omitted from the type so the misleading value cannot be read.
+- **A goal's `linkedAccount` is typed `AccountSummary`, without
+  `access`/`owner`.** When this was written the backend built nested accounts
+  with the plain mapper, so those fields carried the DTO's defaults rather than
+  a fact about the caller — a viewer reading the shared goal got
+  `linkedAccount.access === "OWNER"` for an account that 404s for them,
+  observed live on 2026-09-20. Reported upstream and **fixed at the source in
+  the backend's `29e9ece`**: the nested account is now its own response type
+  carrying neither field. Re-checked live afterwards — the JSON has no `access`
+  key and still carries the balance, so the type now matches the payload
+  instead of ignoring part of it. The types stay apart regardless: a nested
+  account is adjacent data, not the resource the caller asked for.
 - **Shared-scope reads are separate functions, not a `scope` argument.** The
   owned lists are handed to TanStack Query as `queryFn`, which calls them with
   its own context object — a positional `scope` would have been filled with
@@ -76,8 +81,10 @@ Checked on **2026-09-20** against `:8080` with the seeded shares, as both
   resolvable by neither the viewer's own accounts nor the shared one — the
   «Другой счёт» path, live.
 - The shared goal carries `linkedAccount` «Каспи Голд» with its balance, while
-  `GET /accounts/{that id}` is **404** for the same token in the same session.
-  Its nested `access` reads `OWNER`, confirming the trap the type guards.
+  `GET /accounts/{that id}` is **404** for the same token in the same session —
+  the disclosure is handed over, not inferred. Its nested `access` read `OWNER`
+  at the time, which is what prompted the backend fix above; it now has no
+  `access` key at all.
 - `GET /topics/{shared}/candidates` is **404** for a viewer, and so is
   `GET /shares?resourceType=&resourceId=` — both are owner-only, which is why
   neither the attach control nor the share button renders in viewer mode.

@@ -93,12 +93,15 @@ export interface Bank {
 /**
  * An account as it appears *inside* another response — a goal's linked account.
  *
- * Deliberately without {@link Shareable}. The backend builds a nested account
- * with the plain mapper, so its `access`/`owner` are the DTO's defaults
- * (`OWNER`, null) rather than a statement about the caller: a viewer reading a
- * shared goal gets `linkedAccount.access === 'OWNER'` for an account they
- * cannot open at all. Omitting the fields here makes that unreadable rather
- * than misleading.
+ * Deliberately without {@link Shareable}, and the backend now agrees: since
+ * `29e9ece` a goal's linked account is its own response type that omits both
+ * fields, so this shape matches the JSON rather than ignoring what it carries.
+ *
+ * It was written this way before that fix, when a nested account was built by
+ * the plain mapper and carried the DTO's defaults — a viewer reading a shared
+ * goal got `access: "OWNER"` for an account that 404s for them. Keep the types
+ * apart even though the field is gone: a nested account is adjacent data, not
+ * the thing the caller asked for, so it has no access of its own to report.
  */
 export interface AccountSummary {
   id: string
