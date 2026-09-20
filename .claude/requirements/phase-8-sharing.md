@@ -6,10 +6,19 @@ data model and the exposure decisions. This file covers only what the frontend
 has to decide, plus the contract as built (below).
 
 **The backend on `:8080` is live and current** — rebuilt after Phase 8 shipped,
-and `/v3/api-docs` lists the whole `/api/v1/shares` family. The database is at
-`V8` and carries five live shares plus one revoked row from the backend's
-walkthrough — owner shares one account, goal, budget, bill and topic with
-`member@example.com` — so there is real data to build against, not fixtures.
+and `/v3/api-docs` lists the whole `/api/v1/shares` family. Schema is at `V8`.
+
+**There is no seeded sharing state.** The walkthrough's demo shares were
+cleared afterwards, so `/shares/incoming`, `/shares/outgoing` and
+`scope=SHARED` all return `[]` on a fresh clone of this environment. Whoever
+builds these screens creates their own — two `POST /api/v1/shares` with the
+owner's token — rather than expecting rows to be there.
+
+⚠ **Those rows were deleted outright, which is not how the app behaves.**
+Sharing is soft-delete only: `DELETE /api/v1/shares/{id}` sets `is_deleted`,
+and a partial unique index then permits re-sharing the same pair. Don't take
+the cleanup as evidence about revoke semantics — the revoke path is unchanged
+and tested. Re-sharing after a revoke must work, and is worth testing.
 
 See `00-architecture-and-foundations.md` for the stack, formatting rules, auth
 and error contract this builds on.
