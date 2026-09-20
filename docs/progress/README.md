@@ -34,5 +34,8 @@ frontend was underway and was scheduled after bills.
   Wednesday without anything being broken. Record what the number demonstrated,
   not the number as a fact.
 - "Verified" here means checked against the running API and traced through the
-  code. Nothing in this log has been watched rendering in a browser; that
-  distinction is deliberate and worth keeping.
+  code. **Say which kind of verification a claim rests on.** Most of this log
+  is API-and-code verification; Phase 8 was additionally driven in a real
+  browser, and its notes say so. The distinction is worth keeping because the
+  two catch different things — three Phase 8 defects typechecked cleanly and
+  only rendering exposed them.

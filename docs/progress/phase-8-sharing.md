@@ -15,8 +15,8 @@ budget, bill or topic, opened to one person at a time.
   screens rather than read-only twins. (`fff776f`)
 - **Share controls on goals, budgets and bills**, which have no detail view, so
   the control sits on the card or row. (`0d764c0`)
-- **`/shared` — «Доступно мне»**, grouped by type, with «Чем я делюсь» beside
-  it. (`4e7af2c`)
+- **`/shared` — «Общий доступ»**, with «Доступно мне» grouped by type and
+  «Чем я делюсь» beside it. (`4e7af2c`, renamed in `87bd8a4`)
 
 ## Decisions worth remembering
 
@@ -51,7 +51,7 @@ budget, bill or topic, opened to one person at a time.
 - **A viewer's topic resolves names against shared accounts, not owned ones.**
   The rows belong to the owner's ledger, so the viewer's own accounts could
   never appear among them.
-- **The «Доступно мне» screen is built from `/shares/incoming`**, one call for
+- **The «Доступно мне» tab is built from `/shares/incoming`**, one call for
   all five types. Goals, budgets and bills are then fetched with `scope=SHARED`
   because they have no detail page to link to — a shared budget whose usage you
   cannot see would be pointless. Those fetches are conditional on the type
@@ -85,9 +85,28 @@ Checked on **2026-09-20** against `:8080` with the seeded shares, as both
   named, two of each, so a group does not collapse to one row per type.
 - `GET /users` answers for a plain `MEMBER`, which the share picker depends on.
 
-Nothing here has been watched rendering in a browser — the same caveat the rest
-of this log carries. What is verified is the contract each screen reads and the
-code path it takes.
+## Watched rendering in a browser
+
+**This phase is the exception to the caveat elsewhere in this log**: the
+screens were driven in Chrome via Playwright on 2026-09-20, as both users, at
+1280px and at 390px. No console errors, no page errors, no 4xx on any request
+the screens made, and no horizontal overflow at phone width.
+
+Seen, not merely inferred:
+
+- The shared account in viewer mode, with no reconcile or share control, the
+  read-only marker naming «Хозяин», and its transfer row reading
+  «Другой счёт → Депозит». «Удалённый счёт» appears nowhere.
+- The shared topic with all 12 rows resolving to «Другой счёт», and no attach
+  or detach control anywhere on the page.
+- The member's own accounts list still showing only their three accounts.
+- The owner's «Чем я делюсь» listing all seven grants with their grantee.
+- The share dialog on an account whose only other member already has access,
+  correctly offering nobody and saying so.
+
+Three defects surfaced this way and were fixed in `87bd8a4` — two run-together
+sentences, a placeholder repeating its own label, and an h1 repeating the tab
+beneath it. All three typechecked cleanly; only rendering showed them.
 
 ## Still open
 
