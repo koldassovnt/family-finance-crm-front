@@ -15,6 +15,7 @@ export const strings = {
     bills: 'Платежи',
     categories: 'Категории',
     topics: 'События',
+    shared: 'Доступно мне',
     password: 'Смена пароля',
     users: 'Пользователи',
     logout: 'Выйти',
@@ -40,6 +41,12 @@ export const strings = {
     retry: 'Повторить',
     /** Shown when a transaction points at a soft-deleted account. */
     deletedAccount: 'Удалённый счёт',
+    /**
+     * An account the *viewer* cannot resolve, which is not the same thing.
+     * The other side of a transfer out of a shared account exists and is
+     * healthy — it simply wasn't shared. «Удалённый счёт» would be a lie.
+     */
+    otherAccount: 'Другой счёт',
     /** Summary rows with no category. */
     uncategorized: 'Без категории',
     error: 'Не удалось выполнить запрос',
@@ -104,15 +111,19 @@ export const strings = {
 
   users: {
     title: 'Пользователи',
+    members: 'Участники семьи',
     add: 'Создать пользователя',
     email: 'Электронная почта',
     displayName: 'Имя',
     password: 'Пароль',
     /** The endpoint can only create MEMBER; OWNER is rejected. */
     roleHint: 'Новый пользователь получает роль «Член семьи»',
-    /** There is no list endpoint — the screen is create-only by design. */
-    noList: 'Список пользователей недоступен — можно только создать нового',
     created: 'Пользователь создан',
+    /** Phase 8 opened `GET /users` to every member, so the list is real now. */
+    roles: { OWNER: 'Владелец', MEMBER: 'Член семьи' },
+    you: 'Это вы',
+    /** Deleting a member is not implemented server-side — see the phase 8 spec. */
+    noDelete: 'Удаление участников пока не поддерживается',
   },
 
   accounts: {
