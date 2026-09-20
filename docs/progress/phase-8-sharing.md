@@ -56,11 +56,15 @@ budget, bill or topic, opened to one person at a time.
 - **A viewer's topic resolves names against shared accounts, not owned ones.**
   The rows belong to the owner's ledger, so the viewer's own accounts could
   never appear among them.
-- **The «Доступно мне» tab is built from `/shares/incoming`**, one call for
-  all five types. Goals, budgets and bills are then fetched with `scope=SHARED`
-  because they have no detail page to link to — a shared budget whose usage you
-  cannot see would be pointless. Those fetches are conditional on the type
-  appearing in the incoming list.
+- **The «Доступно мне» tab is built from `/shares/incoming`**, one call, which
+  decides which groups appear. Each group then fetches the resources themselves
+  with `scope=SHARED` and renders them with their figures — an account with its
+  balance, a topic through the same `TopicCard` that `/topics` uses, a budget
+  with its bar. The share row's name and owner alone made a screen that said
+  nothing: sharing grants a read over the whole resource, so showing less than
+  the grant conveys is a worse screen, not a safer one. Those fetches are
+  conditional on the type appearing in the incoming list, so a household that
+  shares only accounts makes one extra request.
 - **The shared budgets section carries a month selector.** A budget is a
   per-month figure; leaving the month implicit would look like "always" while
   meaning "this month".
