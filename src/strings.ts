@@ -126,6 +126,63 @@ export const strings = {
     noDelete: 'Удаление участников пока не поддерживается',
   },
 
+  sharing: {
+    /** The action, on a resource you own. */
+    share: 'Поделиться',
+    shareTitle: 'Поделиться',
+    incoming: 'Доступно мне',
+    outgoing: 'Чем я делюсь',
+    /** The read-only marker every viewed screen carries. */
+    readOnly: 'Доступно для просмотра',
+    owner: 'владелец',
+    sharedWith: 'Есть доступ',
+    addGrantee: 'Кому открыть доступ',
+    revoke: 'Закрыть доступ',
+    granted: 'Доступ открыт',
+    revoked: 'Доступ закрыт',
+    noGrantees: 'Пока никому не открыт',
+    /** Every candidate is excluded: already shared, or yourself. */
+    noCandidates: 'Больше некому открыть доступ',
+    /** 409 — the pair already exists. */
+    duplicate: 'Уже есть доступ',
+    sharedAt: 'Открыт',
+    open: 'Открыть',
+    nothingIncoming: 'Вам пока ничего не открыли',
+    nothingOutgoing: 'Вы пока ничем не делитесь',
+    resourceTypes: {
+      ACCOUNT: 'Счёт',
+      GOAL: 'Цель',
+      BUDGET: 'Бюджет',
+      BILL: 'Платёж',
+      TOPIC: 'Событие',
+    },
+    /** Plural headings for the «Доступно мне» groups. */
+    resourceGroups: {
+      ACCOUNT: 'Счета',
+      GOAL: 'Цели',
+      BUDGET: 'Бюджеты',
+      BILL: 'Платежи',
+      TOPIC: 'События',
+    },
+    /**
+     * Said before the grant is made, per type, because "share my account"
+     * sounds narrower than it is. Generic wording would under-describe the
+     * widest cases — a topic carries transactions from accounts that were
+     * never shared, and a goal hands over its linked account's balance.
+     */
+    disclosure: {
+      ACCOUNT: 'Будет виден баланс и вся история операций: суммы, даты, заметки, категории и события.',
+      GOAL: 'Будут видны цель и прогресс, а также название, валюта и баланс связанного счёта.',
+      BUDGET: 'Будут видны категория, лимит и расход за любой месяц. Сами операции не видны.',
+      BILL: 'Будет виден только сам платёж.',
+      TOPIC: 'Будут видны итоги события и все прикреплённые операции — включая операции по счетам, к которым доступа нет.',
+    },
+    /** Names the account whose balance a shared goal discloses outright. */
+    goalAccountWarning: (accountName: string) => `Будет виден баланс счёта «${accountName}»`,
+    /** Nothing shared is ever added to the viewer's own figures. */
+    notInTotals: 'Эти данные не входят в ваши итоги, бюджеты и обзор',
+  },
+
   accounts: {
     title: 'Счета',
     balance: 'Баланс',

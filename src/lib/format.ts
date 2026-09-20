@@ -104,6 +104,17 @@ export function formatDate(isoDate: string): string {
   return `${day}.${month}.${year}`
 }
 
+/**
+ * An ISO-8601 *instant* -> the Almaty calendar date it fell on, `dd.MM.yyyy`.
+ *
+ * Separate from {@link formatDate}, which takes a `yyyy-MM-dd` and splits on
+ * the dashes — handing it an instant yields «19T20:12:20.123Z.09.2026». Most
+ * dates in this app are already plain dates; `sharedAt` is a timestamp.
+ */
+export function formatInstantDate(instant: string): string {
+  return formatDate(isoDateFormatter.format(new Date(instant)))
+}
+
 /** `yyyy-MM` -> «сентябрь 2026», for month selectors and headings. */
 export function formatMonth(month: string): string {
   const [year, monthNumber] = month.split('-')
