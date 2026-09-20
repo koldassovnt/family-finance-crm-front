@@ -5,6 +5,8 @@ import { accountsApi } from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { ReconcileDialog } from '@/components/accounts/ReconcileDialog'
+import { ShareButton } from '@/components/sharing/ShareButton'
+import { ViewerNotice } from '@/components/sharing/ViewerNotice'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -34,9 +36,22 @@ export function AccountDetailPage() {
     queryFn: () => accountsApi.get(id),
   })
 
+  const isViewer = account.data?.access === 'VIEWER'
+
   // Needed to name the other side of a transfer, which arrives as an id.
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list })
-  const lookup = accountNameLookup(accounts.data)
+
+  /*
+   * A viewer's misses mean something different, and there are more of them.
+   * `GET /accounts` is own-scoped, so for a viewer it does not even contain the
+   * account being viewed — hence seeding it below. What remains unresolved is
+   * the far side of a transfer into an account that was not shared: it exists
+   * and is perfectly healthy, so «Удалённый счёт» would state something false.
+   */
+  const lookup = accountNameLookup(
+    isViewer && account.data !== undefined ? [account.data] : accounts.data,
+    isViewer ? strings.common.otherAccount : undefined,
+  )
 
   const history = useQuery({
     queryKey: ['account-transactions', id, { from, to }],
@@ -64,23 +79,40 @@ export function AccountDetailPage() {
                 >
                   {formatMoneyWithCurrency(data.balance, data.currency)}
                 </span>
-                <Button variant="outline" onClick={() => setIsReconcileOpen(true)}>
-                  {strings.accounts.reconcile}
-                </Button>
+                {/* Absent for a viewer, not disabled. The server rejects the
+                    write regardless; the UI's job is to not offer it. */}
+                {data.access === 'OWNER' && (
+                  <>
+                    <Button variant="outline" onClick={() => setIsReconcileOpen(true)}>
+                      {strings.accounts.reconcile}
+                    </Button>
+                    <ShareButton
+                      resourceType="ACCOUNT"
+                      resourceId={data.id}
+                      resourceName={data.name}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
-            {data.balance < 0 && (
+            {data.access === 'VIEWER' && <ViewerNotice owner={data.owner} />}
+
+            {/* A negative balance asks the owner to reconcile, which a viewer
+                cannot do — so the prompt would be an instruction to nobody. */}
+            {data.balance < 0 && data.access === 'OWNER' && (
               <Alert>
                 <AlertDescription>{strings.accounts.negativeHint}</AlertDescription>
               </Alert>
             )}
 
-            <ReconcileDialog
-              account={data}
-              open={isReconcileOpen}
-              onOpenChange={setIsReconcileOpen}
-            />
+            {data.access === 'OWNER' && (
+              <ReconcileDialog
+                account={data}
+                open={isReconcileOpen}
+                onOpenChange={setIsReconcileOpen}
+              />
+            )}
           </>
         )}
       </QueryState>

@@ -3,10 +3,12 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
-import { accountsApi, topicsApi } from '@/api/endpoints'
+import { accountsApi, sharedResourcesApi, topicsApi } from '@/api/endpoints'
 import type { TopicDetail, Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { CategoryBarChart } from '@/components/charts/CategoryBarChart'
+import { ShareButton } from '@/components/sharing/ShareButton'
+import { ViewerNotice } from '@/components/sharing/ViewerNotice'
 import { AttachCandidatesDialog } from '@/components/topics/AttachCandidatesDialog'
 import { TopicForm } from '@/components/topics/TopicForm'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -50,8 +52,31 @@ export function TopicDetailPage() {
     queryKey: ['topic', id, 'transactions'],
     queryFn: () => topicsApi.transactions(id),
   })
-  const accounts = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list })
-  const lookup = accountNameLookup(accounts.data)
+  const isViewer = detail.data?.topic.access === 'VIEWER'
+  const isLoaded = detail.data !== undefined
+
+  /*
+   * A shared topic is the widest grant there is: it carries every attached
+   * transaction, including ones on accounts that were never shared. So a viewer
+   * needs the accounts *they* can see — their own are irrelevant here, since
+   * the rows belong to the owner's ledger — and everything else is «Другой
+   * счёт». Not «Удалённый счёт»: those accounts are alive and well, just not
+   * theirs to see.
+   */
+  const accounts = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountsApi.list,
+    enabled: isLoaded && !isViewer,
+  })
+  const sharedAccounts = useQuery({
+    queryKey: ['accounts', 'shared'],
+    queryFn: sharedResourcesApi.accounts,
+    enabled: isLoaded && isViewer,
+  })
+  const lookup = accountNameLookup(
+    isViewer ? sharedAccounts.data : accounts.data,
+    isViewer ? strings.common.otherAccount : undefined,
+  )
 
   function invalidate() {
     for (const key of ['topics', 'topic', 'topic-candidates', 'transactions']) {
@@ -113,23 +138,32 @@ export function TopicDetailPage() {
                   )}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAttachOpen(true)}
-                  // A CLOSED topic still accepts attachments — a late invoice
-                  // is normal. Closing affects the picker, not the API.
-                >
-                  {strings.topics.attach}
-                </Button>
-                <Button variant="ghost" onClick={() => setIsFormOpen(true)}>
-                  {strings.common.edit}
-                </Button>
-                <Button variant="ghost" onClick={() => setIsDeleteOpen(true)}>
-                  {strings.common.delete}
-                </Button>
-              </div>
+              {/* Nothing is disabled for a viewer — attach, edit and delete are
+                  simply not rendered. `candidates` is owner-only server-side
+                  anyway: it proposes transactions to attach, so it is a write
+                  tool wearing a read verb. */}
+              {topic.access === 'OWNER' && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAttachOpen(true)}
+                    // A CLOSED topic still accepts attachments — a late invoice
+                    // is normal. Closing affects the picker, not the API.
+                  >
+                    {strings.topics.attach}
+                  </Button>
+                  <ShareButton resourceType="TOPIC" resourceId={topic.id} resourceName={topic.name} />
+                  <Button variant="ghost" onClick={() => setIsFormOpen(true)}>
+                    {strings.common.edit}
+                  </Button>
+                  <Button variant="ghost" onClick={() => setIsDeleteOpen(true)}>
+                    {strings.common.delete}
+                  </Button>
+                </div>
+              )}
             </div>
+
+            {topic.access === 'VIEWER' && <ViewerNotice owner={topic.owner} />}
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Figure label={strings.topics.spent} value={topic.spent} />
@@ -147,12 +181,14 @@ export function TopicDetailPage() {
             {isFormOpen && (
               <TopicForm key={topic.id} topic={topic} open onOpenChange={setIsFormOpen} />
             )}
-            <AttachCandidatesDialog
-              topicId={topic.id}
-              hasDates={topic.startDate !== null && topic.endDate !== null}
-              open={isAttachOpen}
-              onOpenChange={setIsAttachOpen}
-            />
+            {topic.access === 'OWNER' && (
+              <AttachCandidatesDialog
+                topicId={topic.id}
+                hasDates={topic.startDate !== null && topic.endDate !== null}
+                open={isAttachOpen}
+                onOpenChange={setIsAttachOpen}
+              />
+            )}
 
             {/* The same chart the dashboard uses — the breakdown comes back in
                 the monthly summary's CategorySummary shape precisely so this
@@ -215,7 +251,7 @@ export function TopicDetailPage() {
                 <TableHead>{strings.transactions.category}</TableHead>
                 <TableHead>{strings.transactions.account}</TableHead>
                 <TableHead className="text-right">{strings.transactions.amount}</TableHead>
-                <TableHead className="w-24" />
+                {!isViewer && <TableHead className="w-24" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -236,18 +272,20 @@ export function TopicDetailPage() {
                   <TableCell>
                     <TransactionAmount transaction={transaction} />
                   </TableCell>
-                  <TableCell className="text-right">
-                    {/* Detaching leaves the transaction untouched in the
-                        ledger — only the link goes. */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={detach.isPending}
-                      onClick={() => detach.mutate(transaction.id)}
-                    >
-                      {strings.topics.detach}
-                    </Button>
-                  </TableCell>
+                  {!isViewer && (
+                    <TableCell className="text-right">
+                      {/* Detaching leaves the transaction untouched in the
+                          ledger — only the link goes. */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={detach.isPending}
+                        onClick={() => detach.mutate(transaction.id)}
+                      >
+                        {strings.topics.detach}
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
