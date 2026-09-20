@@ -5,11 +5,11 @@ doc is `.claude/requirements/phase-8-sharing.md` in its repo; read it for the
 data model and the exposure decisions. This file covers only what the frontend
 has to decide, plus the contract as built (below).
 
-⚠ **The container on `:8080` is a pre-Phase-8 build.** None of these endpoints
-answer until it is rebuilt. The database is at `V8` and carries five live
-shares plus one revoked row from the backend's walkthrough — owner shares one
-account, goal, budget, bill and topic with `member@example.com` — so there is
-real data to render against once it is.
+**The backend on `:8080` is live and current** — rebuilt after Phase 8 shipped,
+and `/v3/api-docs` lists the whole `/api/v1/shares` family. The database is at
+`V8` and carries five live shares plus one revoked row from the backend's
+walkthrough — owner shares one account, goal, budget, bill and topic with
+`member@example.com` — so there is real data to build against, not fixtures.
 
 See `00-architecture-and-foundations.md` for the stack, formatting rules, auth
 and error contract this builds on.
