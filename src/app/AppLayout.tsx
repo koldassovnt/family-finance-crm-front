@@ -12,6 +12,7 @@ const navItems = [
   { to: '/goals', label: strings.nav.goals },
   { to: '/bills', label: strings.nav.bills },
   { to: '/topics', label: strings.nav.topics },
+  { to: '/shared', label: strings.nav.shared },
   { to: '/settings/categories', label: strings.nav.categories },
 ]
 
@@ -39,7 +40,8 @@ export function AppLayout() {
                 {item.label}
               </NavLink>
             ))}
-            {/* Owner-only: there is no list-users endpoint, so this is create-only. */}
+            {/* Owner-only: only an OWNER may create a member. Everyone can
+                read the household list, which the share picker needs. */}
             {user?.role === 'OWNER' && (
               <NavLink
                 to="/settings/users"

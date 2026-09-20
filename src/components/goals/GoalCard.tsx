@@ -20,9 +20,14 @@ export function GoalCard({
   onDelete,
 }: {
   goal: Goal
-  onContribute: () => void
-  onEdit: () => void
-  onDelete: () => void
+  /**
+   * Omitted when the goal is someone else's. A viewer gets no write
+   * affordance at all — not a disabled one — so the whole action row goes
+   * rather than each button being greyed out.
+   */
+  onContribute?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }) {
   const currency = goal.linkedAccount.currency
 
@@ -83,31 +88,35 @@ export function GoalCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1">
-          {/* Contributing to an abandoned or archived goal makes no sense, and
-              its account may well be closed. */}
-          {goal.status === 'ACTIVE' && (
-            <Button size="sm" variant="outline" onClick={onContribute}>
-              {strings.goals.contribute}
-            </Button>
-          )}
-          {/* The dialog names the linked account, because a shared goal hands
-              over its balance outright rather than merely implying it. */}
-          {goal.access === 'OWNER' && (
+        {goal.access === 'OWNER' && (
+          <div className="flex flex-wrap gap-1">
+            {/* Contributing to an abandoned or archived goal makes no sense, and
+                its account may well be closed. */}
+            {goal.status === 'ACTIVE' && onContribute !== undefined && (
+              <Button size="sm" variant="outline" onClick={onContribute}>
+                {strings.goals.contribute}
+              </Button>
+            )}
+            {/* The dialog names the linked account, because a shared goal hands
+                over its balance outright rather than merely implying it. */}
             <ShareButton
               resourceType="GOAL"
               resourceId={goal.id}
               resourceName={goal.name}
               goalAccountName={goal.linkedAccount.name}
             />
-          )}
-          <Button size="sm" variant="ghost" onClick={onEdit}>
-            {strings.common.edit}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={onDelete}>
-            {strings.common.delete}
-          </Button>
-        </div>
+            {onEdit !== undefined && (
+              <Button size="sm" variant="ghost" onClick={onEdit}>
+                {strings.common.edit}
+              </Button>
+            )}
+            {onDelete !== undefined && (
+              <Button size="sm" variant="ghost" onClick={onDelete}>
+                {strings.common.delete}
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
