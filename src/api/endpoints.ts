@@ -1,6 +1,8 @@
 import { request } from './client'
 import type {
   Account,
+  Share,
+  ShareResourceType,
   Bank,
   Bill,
   Budget,
@@ -29,6 +31,11 @@ export const authApi = {
 export const usersApi = {
   /** Re-establishes identity after a reload from a stored token. */
   me: () => request<User>(`${V1}/users/me`),
+  /**
+   * The household. Open to any authenticated member as of phase 8 — it backs
+   * the share picker, which everyone has, not just OWNER.
+   */
+  list: () => request<User[]>(`${V1}/users`),
   create: (body: { email: string; displayName: string; password: string }) =>
     request<User>(`${V1}/users`, { method: 'POST', body }),
   /** 204, and invalidates the token making the call. */
@@ -251,4 +258,55 @@ export const billsApi = {
   remove: (id: string) => request<void>(`${V1}/bills/${id}`, { method: 'DELETE' }),
   removeBatch: (batchId: string) =>
     request<void>(`${V1}/bills/batch/${batchId}`, { method: 'DELETE' }),
+}
+
+/**
+ * Per-resource read-only sharing between household members.
+ *
+ * Every failure here is deliberately indistinguishable from "not found": a
+ * resource you don't own, an id that never existed, and a resource you can only
+ * view all return 404. A 403 would confirm the id exists, so don't word the
+ * cases differently in the UI.
+ */
+export const sharesApi = {
+  /**
+   * Who one resource is shared with. Owner-only — a viewer of that very
+   * resource gets 404, so don't call it in viewer mode.
+   *
+   * `resourceName` comes back null here: the caller is looking at the thing.
+   */
+  forResource: (resourceType: ShareResourceType, resourceId: string) =>
+    request<Share[]>(`${V1}/shares`, { query: { resourceType, resourceId } }),
+  /** 400 sharing with yourself, 409 re-sharing the same pair, 404 on an unknown grantee. */
+  create: (body: { resourceType: ShareResourceType; resourceId: string; granteeUserId: string }) =>
+    request<Share>(`${V1}/shares`, { method: 'POST', body }),
+  /** Soft delete — the same pair can be shared again afterwards. */
+  remove: (id: string) => request<void>(`${V1}/shares/${id}`, { method: 'DELETE' }),
+  /** Everything shared *with* you, all five types in one call. */
+  incoming: () => request<Share[]>(`${V1}/shares/incoming`),
+  /** Everything you share, so revoking doesn't mean visiting five screens. */
+  outgoing: () => request<Share[]>(`${V1}/shares/outgoing`),
+}
+
+/**
+ * The five lists again, asking for what others share with you.
+ *
+ * Separate functions rather than a `scope` argument on `list`, for two reasons.
+ * The lists above are passed straight to TanStack Query as `queryFn`, which
+ * calls them with its own context object — a positional `scope` would be filled
+ * with that and silently serialised into the query string. And the rule that
+ * owned lists never mix in shared rows is then structural: there is no argument
+ * that could make `accountsApi.list()` return someone else's account.
+ *
+ * `SHARED` rather than `ALL`: these back the «Доступно мне» screen, where
+ * nothing of your own belongs and no figure is ever summed across owners.
+ */
+export const sharedResourcesApi = {
+  accounts: () => request<Account[]>(`${V1}/accounts`, { query: { scope: 'SHARED' } }),
+  goals: () => request<Goal[]>(`${V1}/goals`, { query: { scope: 'SHARED' } }),
+  /** Defaults to the current month, like the owned list. */
+  budgets: (month?: string) =>
+    request<Budget[]>(`${V1}/budgets`, { query: { month, scope: 'SHARED' } }),
+  bills: () => request<Bill[]>(`${V1}/bills`, { query: { scope: 'SHARED' } }),
+  topics: () => request<Topic[]>(`${V1}/topics`, { query: { scope: 'SHARED' } }),
 }

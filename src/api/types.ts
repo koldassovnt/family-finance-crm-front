@@ -23,6 +23,61 @@ export interface User {
   role: UserRole
 }
 
+export type ShareResourceType = 'ACCOUNT' | 'GOAL' | 'BUDGET' | 'BILL' | 'TOPIC'
+
+/**
+ * What a grant confers. One value today, and the backend models it as its own
+ * enum rather than reusing {@link AccessLevel} — see the note there.
+ */
+export type ShareAccess = 'VIEWER'
+
+/**
+ * How the caller reached a resource: as its owner, or through a share.
+ *
+ * Deliberately a separate type from {@link ShareAccess}, mirroring the backend,
+ * where an exhaustive `asAccessLevel()` maps one to the other. Merging them into
+ * one union would compile today and quietly become wrong the day `EDITOR` is
+ * granted by a share — `OWNER` is not something a share can confer, and
+ * `EDITOR` would not be a way to own something.
+ */
+export type AccessLevel = 'OWNER' | 'VIEWER'
+
+/** Which resources a list returns. Absent means `OWN`, and this app relies on that. */
+export type ShareScope = 'OWN' | 'SHARED' | 'ALL'
+
+/** Just enough of a person to render and sort a row. */
+export interface UserRef {
+  id: string
+  displayName: string
+}
+
+/**
+ * Fields every shareable resource carries, so a screen can tell whose it is
+ * without a second request.
+ */
+export interface Shareable {
+  access: AccessLevel
+  /** Null when `access` is `OWNER` — you are the owner, so there is no one to name. */
+  owner: UserRef | null
+}
+
+export interface Share {
+  id: string
+  resourceType: ShareResourceType
+  resourceId: string
+  /**
+   * Null only on `GET /shares?resourceType=&resourceId=`, where the caller is
+   * looking at the thing already. Populated on incoming and outgoing. A
+   * budget's is its category's name.
+   */
+  resourceName: string | null
+  owner: UserRef
+  grantee: UserRef
+  access: ShareAccess
+  /** `BaseEntity.createdAt`, set on persist — nullable in the DTO, so guard it. */
+  sharedAt: string | null
+}
+
 export interface LoginResponse {
   token: string
   /** ISO-8601 instant. Stored so the UI can warn before a 30-day token lapses. */
@@ -35,7 +90,17 @@ export interface Bank {
   name: string
 }
 
-export interface Account {
+/**
+ * An account as it appears *inside* another response — a goal's linked account.
+ *
+ * Deliberately without {@link Shareable}. The backend builds a nested account
+ * with the plain mapper, so its `access`/`owner` are the DTO's defaults
+ * (`OWNER`, null) rather than a statement about the caller: a viewer reading a
+ * shared goal gets `linkedAccount.access === 'OWNER'` for an account they
+ * cannot open at all. Omitting the fields here makes that unreadable rather
+ * than misleading.
+ */
+export interface AccountSummary {
   id: string
   name: string
   type: AccountType
@@ -43,6 +108,9 @@ export interface Account {
   currency: string
   bank: Bank | null
 }
+
+/** A top-level account, where `access` and `owner` describe the caller's reach. */
+export interface Account extends AccountSummary, Shareable {}
 
 export interface Category {
   id: string
@@ -99,7 +167,7 @@ export type TopicStatus = 'ACTIVE' | 'CLOSED'
  * reported in **KZT** via `amountKzt`, so a trip paid partly in another
  * currency is never a sum of mixed currencies.
  */
-export interface Topic {
+export interface Topic extends Shareable {
   id: string
   name: string
   description: string | null
@@ -152,7 +220,7 @@ export interface MonthlySummary {
   incomeByCategory: CategorySummary[]
 }
 
-export interface Budget {
+export interface Budget extends Shareable {
   id: string
   category: Category
   limitAmount: number
@@ -171,21 +239,21 @@ export interface Budget {
   percentUsed: number
 }
 
-export interface Goal {
+export interface Goal extends Shareable {
   id: string
   name: string
   type: GoalType
   targetAmount: number
   targetDate: string | null
   /** Embedded in full, unlike a transaction's account — no join needed. */
-  linkedAccount: Account
+  linkedAccount: AccountSummary
   status: GoalStatus
   /** Clamped 0–100, unlike a budget's percentUsed. */
   progressPercent: number
   achieved: boolean
 }
 
-export interface Bill {
+export interface Bill extends Shareable {
   id: string
   name: string
   amount: number
