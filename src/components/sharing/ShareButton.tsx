@@ -142,10 +142,12 @@ function ShareDialog({
           {/* Said before the grant, not after: "share my account" sounds
               narrower than what a grantee actually gets. */}
           <Alert>
-            <AlertDescription className="space-y-1">
-              <span>{strings.sharing.disclosure[resourceType]}</span>
+            <AlertDescription className="block space-y-1">
+              {/* Block, not inline: two sentences running together read as one
+                  malformed one — «…связанного счёта.Будет виден баланс…». */}
+              <span className="block">{strings.sharing.disclosure[resourceType]}</span>
               {goalAccountName !== undefined && (
-                <span className="font-medium">
+                <span className="block font-medium">
                   {strings.sharing.goalAccountWarning(goalAccountName)}
                 </span>
               )}
@@ -166,7 +168,7 @@ function ShareDialog({
                     value: member.id,
                     label: member.displayName,
                   }))}
-                  placeholder={strings.sharing.addGrantee}
+                  placeholder={strings.sharing.pickMember}
                 />
                 <Button
                   type="button"

@@ -15,7 +15,7 @@ export const strings = {
     bills: 'Платежи',
     categories: 'Категории',
     topics: 'События',
-    shared: 'Доступно мне',
+    shared: 'Общий доступ',
     password: 'Смена пароля',
     users: 'Пользователи',
     logout: 'Выйти',
@@ -127,6 +127,8 @@ export const strings = {
   },
 
   sharing: {
+    /** The screen's own name — the tabs below it are «Доступно мне»/«Чем я делюсь». */
+    title: 'Общий доступ',
     /** The action, on a resource you own. */
     share: 'Поделиться',
     shareTitle: 'Поделиться',
@@ -137,6 +139,8 @@ export const strings = {
     owner: 'владелец',
     sharedWith: 'Есть доступ',
     addGrantee: 'Кому открыть доступ',
+    /** The trigger's own text, distinct from the label above it. */
+    pickMember: 'Выберите участника',
     revoke: 'Закрыть доступ',
     granted: 'Доступ открыт',
     revoked: 'Доступ закрыт',

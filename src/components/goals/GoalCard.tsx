@@ -39,6 +39,9 @@ export function GoalCard({
             <p className="truncate font-medium">{goal.name}</p>
             <p className="text-xs text-muted-foreground">
               {strings.goals.types[goal.type]} · {goal.linkedAccount.name}
+              {/* On «Доступно мне» the card is the whole row, so it carries its
+                  own attribution rather than a caption floating beneath it. */}
+              {goal.owner !== null && ` · ${strings.sharing.owner}: ${goal.owner.displayName}`}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">

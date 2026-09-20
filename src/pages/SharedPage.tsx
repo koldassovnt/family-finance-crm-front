@@ -30,7 +30,7 @@ export function SharedPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">{strings.sharing.incoming}</h1>
+      <h1 className="text-2xl font-semibold">{strings.sharing.title}</h1>
 
       <Tabs defaultValue="incoming">
         <TabsList>
@@ -126,11 +126,8 @@ function SharedGoals() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((goal) => (
             // No callbacks: the card renders no action row for a goal that
-            // isn't yours.
-            <div key={goal.id} className="space-y-1">
-              <GoalCard goal={goal} />
-              <OwnerLine name={goal.owner?.displayName} />
-            </div>
+            // isn't yours, and it names the owner in its own subtitle.
+            <GoalCard key={goal.id} goal={goal} />
           ))}
         </div>
       )}
