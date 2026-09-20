@@ -1,9 +1,15 @@
 # Phase 8 — Sharing («Поделиться»)
 
-Status: **spec'd, not built — on either side.** The backend's own doc is
-`.claude/requirements/phase-8-sharing.md` in its repo (pushed, `3707d55`);
-read it for the data model, the endpoints and the exposure decisions. This
-file covers only what the frontend has to decide.
+Status: **backend built (`901fed3`), frontend not started.** The backend's own
+doc is `.claude/requirements/phase-8-sharing.md` in its repo; read it for the
+data model and the exposure decisions. This file covers only what the frontend
+has to decide, plus the contract as built (below).
+
+⚠ **The container on `:8080` is a pre-Phase-8 build.** None of these endpoints
+answer until it is rebuilt. The database is at `V8` and carries five live
+shares plus one revoked row from the backend's walkthrough — owner shares one
+account, goal, budget, bill and topic with `member@example.com` — so there is
+real data to render against once it is.
 
 See `00-architecture-and-foundations.md` for the stack, formatting rules, auth
 and error contract this builds on.
@@ -59,6 +65,65 @@ where *some* rows do is not. So:
   which it should not.
 
 ---
+
+## The contract, as built
+
+Verified against the backend source at `901fed3`, not just its summary.
+
+| Endpoint | Notes |
+|---|---|
+| `GET /api/v1/users` | The household, for the picker. Any authenticated member, not just `OWNER`. `{id, email, displayName, role}`. |
+| `GET /api/v1/shares?resourceType=&resourceId=` | Who one resource is shared with. Owner only — **a viewer of that very resource gets 404, not 403.** |
+| `POST /api/v1/shares` | `{resourceType, resourceId, granteeUserId}`. No `access` field; `VIEWER` is implied. |
+| `DELETE /api/v1/shares/{id}` | Revoke. Takes effect on the next read. |
+| `GET /api/v1/shares/incoming` \| `/outgoing` | All five types in one list. No `scope` fan-out needed. |
+
+**`ShareResponse`** — `{id, resourceType, resourceId, resourceName, owner,
+grantee, access, sharedAt}`, where `owner`/`grantee` are `{id, displayName}`.
+
+- `resourceName` is **null only on the per-resource listing**, where the caller
+  is already looking at the thing. It is populated on incoming/outgoing. A
+  budget's is its category's name.
+- `sharedAt` is nullable in the DTO. Don't render it unguarded.
+
+### Two enums, not one — type them separately
+
+`ShareResponse.access` is `ShareAccess`, which has **exactly one value,
+`VIEWER`**. A resource's `access` is `AccessLevel`, which is `OWNER | VIEWER`.
+They are different types in the backend (`Enums.kt:37`, `:44`) and a single
+frontend union would quietly merge them; the day `EDITOR` arrives it will
+arrive in one and not the other.
+
+### The additive changes to endpoints already in use
+
+Both are backward-compatible — every call the frontend makes today returns
+what it returned before, and the backend made that a test rather than an
+assumption.
+
+- **`scope=OWN|SHARED|ALL`** on `/accounts`, `/goals`, `/budgets`, `/bills`,
+  `/topics`. **Default `OWN`.** Per the decision above, the frontend keeps
+  sending no `scope` at all.
+- **`access` and `owner: {id, displayName}`** now ride on those five list
+  responses and on `GET /accounts/{id}` and `GET /topics/{id}`. **`owner` is
+  null when `access` is `OWNER`.** Badge and sort off these — never a second
+  call to find out whose something is.
+
+### Which reads a viewer may make
+
+`GET /accounts/{id}`, `/accounts/{id}/transactions`, `/topics/{id}`,
+`/topics/{id}/transactions`, and the five lists via `scope`.
+
+**`GET /topics/{id}/candidates` stays owner-only.** It suggests transactions to
+attach — a writing tool wearing a read verb. Don't render it in viewer mode.
+
+**Every mutating endpoint returns 404 to a viewer**, for all five types.
+
+### Errors
+
+- Foreign or unowned resource id → **404, never 403.** A 403 would confirm the
+  id exists. The UI must not undo that by wording the two differently.
+- Sharing with yourself → 400. Re-sharing the same thing with the same person
+  → 409. Unknown `granteeUserId` → 404.
 
 ## Sharing from a detail view
 
@@ -119,6 +184,13 @@ discloses the balance and names the account. The guard that comes with it:
 `targetAmount` too.** A percentage beside its target is the balance written
 in two numbers instead of one, and shipping that would reintroduce exactly
 the false promise this section rejects.
+
+**As built, the disclosure is wider than "the balance is derivable".** A
+shared goal carries `linkedAccount` **with its balance on it**. The backend
+confirmed this against a running instance: the grantee reads the balance of
+«Каспи Голд» through the goal while `GET /accounts/{that id}` still 404s for
+them. So the dialog is not warning about an inference — it is warning about a
+number the viewer is handed. Name the account.
 
 ## Rendering a viewer's screens
 
@@ -204,6 +276,7 @@ it isn't rediscovered as a 500 in production.
 ## Open questions for whoever builds this
 - `scope=SHARED` exists and this spec doesn't use it: `/shares/incoming`
   already returns everything across the five types in one call, which is what
-  the «Доступно мне» screen needs. If that turns out to lack a field the screen
-  wants, prefer fixing the incoming payload over fanning out five `scope=SHARED`
-  calls.
+  the «Доступно мне» screen needs. Confirmed against the built API — the row
+  carries `resourceName` and `owner`, which is the whole screen. If it ever
+  turns out to lack a field, prefer fixing the incoming payload over fanning
+  out five `scope=SHARED` calls.
