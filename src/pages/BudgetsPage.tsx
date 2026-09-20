@@ -9,6 +9,7 @@ import { QueryState } from '@/components/QueryState'
 import { BudgetBar } from '@/components/budgets/BudgetBar'
 import { BudgetForm } from '@/components/budgets/BudgetForm'
 import { BudgetUsageChart } from '@/components/budgets/BudgetUsageChart'
+import { ShareButton } from '@/components/sharing/ShareButton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +117,15 @@ export function BudgetsPage() {
                         <BudgetBar budget={budget} />
                       </div>
                       <div className="flex shrink-0 gap-1">
+                        {/* This list is own-scoped, so access is always OWNER
+                            here — the guard keeps that true if it ever isn't. */}
+                        {budget.access === 'OWNER' && (
+                          <ShareButton
+                            resourceType="BUDGET"
+                            resourceId={budget.id}
+                            resourceName={budget.category.name}
+                          />
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"

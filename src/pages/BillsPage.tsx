@@ -9,6 +9,7 @@ import { QueryState } from '@/components/QueryState'
 import { BillBatchForm } from '@/components/bills/BillBatchForm'
 import { BillCalendar } from '@/components/bills/BillCalendar'
 import { BillForm } from '@/components/bills/BillForm'
+import { ShareButton } from '@/components/sharing/ShareButton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -188,6 +189,13 @@ export function BillsPage() {
                           {strings.bills.markPaid}
                         </label>
                         <div className="flex gap-1">
+                          {bill.access === 'OWNER' && (
+                            <ShareButton
+                              resourceType="BILL"
+                              resourceId={bill.id}
+                              resourceName={bill.name}
+                            />
+                          )}
                           {/* The batch id is a convenience handle, not a
                               grouping that constrains the rows. */}
                           {bill.batchId !== null && (

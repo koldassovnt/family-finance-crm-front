@@ -1,4 +1,5 @@
 import type { Goal } from '@/api/types'
+import { ShareButton } from '@/components/sharing/ShareButton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -89,6 +90,16 @@ export function GoalCard({
             <Button size="sm" variant="outline" onClick={onContribute}>
               {strings.goals.contribute}
             </Button>
+          )}
+          {/* The dialog names the linked account, because a shared goal hands
+              over its balance outright rather than merely implying it. */}
+          {goal.access === 'OWNER' && (
+            <ShareButton
+              resourceType="GOAL"
+              resourceId={goal.id}
+              resourceName={goal.name}
+              goalAccountName={goal.linkedAccount.name}
+            />
           )}
           <Button size="sm" variant="ghost" onClick={onEdit}>
             {strings.common.edit}
