@@ -1,32 +1,37 @@
 # Phase 8 — Sharing («Поделиться»)
 
-Status: **backend built (`901fed3`), frontend not started.** The backend's own
-doc is `.claude/requirements/phase-8-sharing.md` in its repo; read it for the
-data model and the exposure decisions. This file covers only what the frontend
-has to decide, plus the contract as built (below).
+Status: **built on both sides.** What the frontend actually does, and what was
+verified against a running backend, is in `docs/progress/phase-8-sharing.md`.
+The backend's own doc is `.claude/requirements/phase-8-sharing.md` in its repo;
+read it for the data model and the exposure decisions. This file covers only
+what the frontend has to decide, plus the contract as built (below).
 
 **The backend on `:8080` is live and current** — rebuilt after Phase 8 shipped,
 and `/v3/api-docs` lists the whole `/api/v1/shares` family. Schema is at `V8`.
 
-**There is no seeded sharing state.** The walkthrough's demo shares were
-cleared afterwards, so `/shares/incoming`, `/shares/outgoing` and
-`scope=SHARED` all return `[]` on a fresh clone of this environment. Whoever
-builds these screens creates their own — two `POST /api/v1/shares` with the
-owner's token — rather than expecting rows to be there.
+**Seven shares are seeded**, all from «Хозяин» to «Член семьи», chosen so each
+exercises a different rendering case: an account whose one transfer has an
+unshared counterparty, a goal whose linked account 404s for the grantee, two
+budgets (one over limit, one amber), two bills (one overdue), and the trip
+topic with income and expense breakdowns. The member also owns three accounts
+of their own. Both are a snapshot, not a fixture — treat a missing row as the
+environment having moved on, not as a bug.
 
-⚠ **Those rows were deleted outright, which is not how the app behaves.**
-Sharing is soft-delete only: `DELETE /api/v1/shares/{id}` sets `is_deleted`,
-and a partial unique index then permits re-sharing the same pair. Don't take
-the cleanup as evidence about revoke semantics — the revoke path is unchanged
-and tested. Re-sharing after a revoke must work, and is worth testing.
+⚠ **A revoke is a soft delete**, and a partial unique index then permits
+re-sharing the same pair. Demo rows have at times been deleted outright during
+environment cleanup; don't read that as evidence about revoke semantics.
+Re-sharing after a revoke must work, and is worth testing.
 
 See `00-architecture-and-foundations.md` for the stack, formatting rules, auth
 and error contract this builds on.
 
 A member shares **one specific thing they own** — an account, goal, budget,
 bill or topic — with another household member, who can then **view it and
-nothing more**. Controlled from that resource's own detail view. Everyone has
-it, not just the `OWNER`.
+nothing more**. Everyone can share, not just the `OWNER`.
+
+Controlled from the resource itself: the detail view for an account or a topic,
+and the card or row for a goal, budget or bill, which have no detail view of
+their own.
 
 ---
 
