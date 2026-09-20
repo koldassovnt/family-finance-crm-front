@@ -32,6 +32,13 @@ export function TopicCard({ topic }: { topic: Topic }) {
             {topic.description !== null && (
               <p className="truncate text-xs text-muted-foreground">{topic.description}</p>
             )}
+            {/* Set only on «Доступно мне», where the card is the whole row and
+                has to say whose totals these are. */}
+            {topic.owner !== null && (
+              <p className="truncate text-xs text-muted-foreground">
+                {strings.sharing.owner}: {topic.owner.displayName}
+              </p>
+            )}
           </div>
           {topic.status === 'CLOSED' && (
             <Badge variant="secondary">{strings.topics.statuses.CLOSED}</Badge>

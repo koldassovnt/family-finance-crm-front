@@ -2,17 +2,19 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { sharedResourcesApi, sharesApi } from '@/api/endpoints'
-import type { Bill, Budget, Goal, Share, ShareResourceType } from '@/api/types'
+import type { Account, Bill, Budget, Goal, Share, ShareResourceType, Topic } from '@/api/types'
 import { MonthSelector } from '@/components/MonthSelector'
 import { QueryState } from '@/components/QueryState'
 import { BudgetBar } from '@/components/budgets/BudgetBar'
 import { GoalCard } from '@/components/goals/GoalCard'
+import { TopicCard } from '@/components/topics/TopicCard'
 import { OutgoingShares } from '@/components/sharing/OutgoingShares'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { currentMonthInAlmaty, formatDate, formatMoneyWithCurrency } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { strings } from '@/strings'
 
 /**
@@ -72,48 +74,90 @@ function IncomingGroups({ shares }: { shares: Share[] }) {
             {strings.sharing.resourceGroups[type]}
           </h2>
           {/*
-           * Accounts and topics have detail pages that already render in viewer
-           * mode, so their rows link there. The other three have no detail view,
-           * so the resource itself is fetched and rendered here — a shared
-           * budget you cannot see the usage of would be pointless.
+           * Every group renders the resource itself, not the share row. A name
+           * and an owner badge is not worth a screen: the point of a shared
+           * account is its balance, and of a shared topic its totals. The
+           * incoming list is what decides which groups appear at all.
            */}
-          {type === 'ACCOUNT' || type === 'TOPIC' ? (
-            <LinkedShares
-              shares={shares.filter((share) => share.resourceType === type)}
-              to={type === 'ACCOUNT' ? '/accounts' : '/topics'}
-            />
-          ) : type === 'GOAL' ? (
-            <SharedGoals />
-          ) : type === 'BUDGET' ? (
-            <SharedBudgets />
-          ) : (
-            <SharedBills />
-          )}
+          <SectionFor type={type} />
         </div>
       ))}
     </>
   )
 }
 
-function LinkedShares({ shares, to }: { shares: Share[]; to: string }) {
+function SectionFor({ type }: { type: ShareResourceType }) {
+  switch (type) {
+    case 'ACCOUNT':
+      return <SharedAccounts />
+    case 'TOPIC':
+      return <SharedTopics />
+    case 'GOAL':
+      return <SharedGoals />
+    case 'BUDGET':
+      return <SharedBudgets />
+    case 'BILL':
+      return <SharedBills />
+  }
+}
+
+function SharedAccounts() {
+  const accounts = useQuery({
+    queryKey: ['accounts', 'shared'],
+    queryFn: sharedResourcesApi.accounts,
+  })
+
   return (
-    <ul className="divide-y rounded-md border">
-      {shares.map((share) => (
-        <li key={share.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
-          <Link
-            to={`${to}/${share.resourceId}`}
-            className="font-medium underline-offset-4 hover:underline"
-          >
-            {/* Populated on the incoming list; null only when you asked who one
-                resource is shared with, which is not this call. */}
-            {share.resourceName ?? strings.sharing.resourceTypes[share.resourceType]}
-          </Link>
-          <Badge variant="secondary" className="ms-auto shrink-0">
-            {share.owner.displayName}
-          </Badge>
-        </li>
-      ))}
-    </ul>
+    <QueryState query={accounts} empty={strings.sharing.nothingIncoming}>
+      {(rows: Account[]) => (
+        <ul className="divide-y rounded-md border">
+          {rows.map((account) => (
+            <li key={account.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
+              <div className="min-w-0">
+                <Link
+                  to={`/accounts/${account.id}`}
+                  className="font-medium underline-offset-4 hover:underline"
+                >
+                  {account.name}
+                </Link>
+                <p className="truncate text-xs text-muted-foreground">
+                  {strings.accounts.types[account.type]} ·{' '}
+                  {account.bank?.name ?? strings.accounts.noBank}
+                </p>
+              </div>
+              <div className="ms-auto flex shrink-0 items-center gap-2">
+                {/* Balances are per-currency and never summed, here least of
+                    all: these belong to someone else's ledger. */}
+                <span
+                  className={cn('tabular-nums', account.balance < 0 && 'text-destructive')}
+                >
+                  {formatMoneyWithCurrency(account.balance, account.currency)}
+                </span>
+                <Badge variant="secondary">{account.owner?.displayName}</Badge>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </QueryState>
+  )
+}
+
+function SharedTopics() {
+  const topics = useQuery({ queryKey: ['topics', 'shared'], queryFn: sharedResourcesApi.topics })
+
+  return (
+    <QueryState query={topics} empty={strings.sharing.nothingIncoming}>
+      {(rows: Topic[]) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* The same card /topics uses: spent, received, net, plan and the
+              real span. It names the owner itself when one is set. */}
+          {rows.map((topic) => (
+            <TopicCard key={topic.id} topic={topic} />
+          ))}
+        </div>
+      )}
+    </QueryState>
   )
 }
 
