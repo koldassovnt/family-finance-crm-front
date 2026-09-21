@@ -191,7 +191,7 @@ export function BillsPage() {
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -200,7 +200,7 @@ export function BillsPage() {
                         >
                           {strings.bills.markPaid}
                         </Button>
-                        <div className="flex gap-1">
+                        <div className="flex flex-wrap gap-1">
                           {bill.access === 'OWNER' && (
                             <ShareButton
                               resourceType="BILL"
