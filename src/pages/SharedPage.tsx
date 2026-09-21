@@ -60,52 +60,40 @@ export function SharedPage() {
   )
 }
 
-/** Accounts first: they are the widest thing most households share. */
-const GROUP_ORDER: ShareResourceType[] = ['ACCOUNT', 'TOPIC', 'GOAL', 'BUDGET', 'BILL']
+/** Key order is display order. Accounts first: the widest thing most households share. */
+const SECTIONS: Record<ShareResourceType, React.ComponentType> = {
+  ACCOUNT: SharedAccounts,
+  TOPIC: SharedTopics,
+  GOAL: SharedGoals,
+  BUDGET: SharedBudgets,
+  BILL: SharedBills,
+}
 
 function IncomingGroups({ shares }: { shares: Share[] }) {
   const present = new Set(shares.map((share) => share.resourceType))
 
   return (
     <>
-      {GROUP_ORDER.filter((type) => present.has(type)).map((type) => (
-        <div key={type} className="space-y-2">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            {strings.sharing.resourceGroups[type]}
-          </h2>
-          {/*
-           * Every group renders the resource itself, not the share row. A name
-           * and an owner badge is not worth a screen: the point of a shared
-           * account is its balance, and of a shared topic its totals. The
-           * incoming list is what decides which groups appear at all.
-           */}
-          <SectionFor type={type} />
-        </div>
-      ))}
+      {(Object.keys(SECTIONS) as ShareResourceType[])
+        .filter((type) => present.has(type))
+        .map((type) => {
+          const Section = SECTIONS[type]
+          return (
+            <div key={type} className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground">
+                {strings.sharing.resourceGroups[type]}
+              </h2>
+              {/* The incoming list decides which groups appear; each renders the resource itself. */}
+              <Section />
+            </div>
+          )
+        })}
     </>
   )
 }
 
-function SectionFor({ type }: { type: ShareResourceType }) {
-  switch (type) {
-    case 'ACCOUNT':
-      return <SharedAccounts />
-    case 'TOPIC':
-      return <SharedTopics />
-    case 'GOAL':
-      return <SharedGoals />
-    case 'BUDGET':
-      return <SharedBudgets />
-    case 'BILL':
-      return <SharedBills />
-  }
-}
-
 function SharedAccounts() {
-  const accounts = useQuery({
-    queryKey: ['accounts', 'shared'],
-    queryFn: sharedResourcesApi.accounts,
-  })
+  const accounts = useQuery({ queryKey: ['accounts', 'shared'], queryFn: sharedResourcesApi.accounts })
 
   return (
     <QueryState query={accounts} empty={strings.sharing.nothingIncoming}>
@@ -199,7 +187,11 @@ function SharedBudgets() {
                 <Card>
                   <CardContent className="space-y-2 py-4">
                     <BudgetBar budget={budget} />
-                    <OwnerLine name={budget.owner?.displayName} />
+                    {budget.owner && (
+                      <p className="text-xs text-muted-foreground">
+                        {strings.sharing.owner}: {budget.owner.displayName}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </li>
@@ -240,14 +232,5 @@ function SharedBills() {
         </ul>
       )}
     </QueryState>
-  )
-}
-
-function OwnerLine({ name }: { name: string | undefined }) {
-  if (name === undefined) return null
-  return (
-    <p className="text-xs text-muted-foreground">
-      {strings.sharing.owner}: {name}
-    </p>
   )
 }
