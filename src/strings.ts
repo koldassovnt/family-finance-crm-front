@@ -432,6 +432,7 @@ export const strings = {
     deleteSeriesTitle: 'Удалить всю серию?',
     deleteSeriesHint: 'Будут удалены все платежи, созданные вместе с этим',
     markUnpaid: 'Снять отметку',
+    markedPaid: (name: string) => `«${name}» отмечен оплаченным`,
     calendar: 'Календарь',
     noneThisMonth: 'В этом месяце платежей нет',
     nothingUnpaid: 'Всё оплачено',

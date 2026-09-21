@@ -23,7 +23,6 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { currentMonthInAlmaty, formatDate, formatMoneyWithCurrency } from '@/lib/format'
 import { strings } from '@/strings'
 
@@ -54,9 +53,22 @@ export function BillsPage() {
     void queryClient.invalidateQueries({ queryKey: ['bills'] })
   }
 
-  const togglePaid = useMutation({
-    mutationFn: (bill: Bill) => billsApi.update(bill.id, { isPaid: !bill.isPaid }),
-    onSuccess: invalidate,
+  // The panel lists unpaid bills only, so a marked bill leaves it at once. The
+  // toast is the only confirmation the row gets, and the undo lives there.
+  const setPaid = useMutation({
+    mutationFn: ({ bill, isPaid }: { bill: Bill; isPaid: boolean }) =>
+      billsApi.update(bill.id, { isPaid }),
+    onSuccess: (_result, { bill, isPaid }) => {
+      invalidate()
+      if (isPaid) {
+        toast.success(strings.bills.markedPaid(bill.name), {
+          action: {
+            label: strings.bills.markUnpaid,
+            onClick: () => setPaid.mutate({ bill, isPaid: false }),
+          },
+        })
+      }
+    },
     onError: (error) => {
       toast.error(error instanceof ApiError ? error.message : strings.common.error)
     },
@@ -180,14 +192,14 @@ export function BillsPage() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Checkbox
-                            checked={bill.isPaid}
-                            disabled={togglePaid.isPending}
-                            onCheckedChange={() => togglePaid.mutate(bill)}
-                          />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={setPaid.isPending}
+                          onClick={() => setPaid.mutate({ bill, isPaid: true })}
+                        >
                           {strings.bills.markPaid}
-                        </label>
+                        </Button>
                         <div className="flex gap-1">
                           {bill.access === 'OWNER' && (
                             <ShareButton
