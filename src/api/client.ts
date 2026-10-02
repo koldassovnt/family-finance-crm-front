@@ -1,6 +1,11 @@
 import type { ApiErrorBody, ApiErrorCode } from './types'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+// Resolved against the page's origin so a relative value works: the Docker
+// image builds with "/" and nginx proxies /api to the backend.
+const BASE_URL = new URL(
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080',
+  window.location.origin,
+)
 const TOKEN_KEY = 'ffc.token'
 const EXPIRES_KEY = 'ffc.tokenExpiresAt'
 
