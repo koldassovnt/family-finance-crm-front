@@ -104,7 +104,12 @@ All confirmed, not placeholders.
 ## Architecture
 
 - A single-page app talking to the backend REST API at a configurable base
-  URL (e.g. `VITE_API_BASE_URL` env var).
+  URL (`VITE_API_BASE_URL`, resolved against the page's origin, so a
+  relative value works).
+- **Production is one origin.** The Docker image serves the build from nginx
+  on port 80 and proxies `/api/` to the backend container
+  (`family-finance-app:8080`, joined via the backend's compose network). It
+  builds with `VITE_API_BASE_URL=/`. Home LAN only: no TLS, no domain.
 - One central API client wrapping requests: attaches the auth header,
   handles errors consistently, and is the only place that knows the base URL
   and auth scheme.

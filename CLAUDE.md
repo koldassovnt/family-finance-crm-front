@@ -28,6 +28,12 @@ npm run lint     # oxlint
 `http://localhost:8080`). CORS allows all origins and auth is a bearer token,
 so no dev proxy is needed.
 
+**Deploy** (the prod server is the Windows PC the backend runs on):
+`docker compose up -d --build` builds the image and serves it on port 80 as
+`family-finance-web`. nginx proxies `/api/` to `family-finance-app:8080` on
+the external network `family-finance-crm_default`, so start the backend stack
+first. The image builds with `VITE_API_BASE_URL=/`, so it calls its own origin.
+
 ## Layout
 
 ```

@@ -1,0 +1,17 @@
+# `docker compose up -d --build` builds the SPA and serves it on port 80.
+# The backend runs from its own repo's compose project; this joins that
+# project's network to reach it as family-finance-app.
+services:
+  web:
+    build: .
+    container_name: family-finance-web
+    ports:
+      - "${WEB_PORT:-80}:80"
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  backend:
+    name: family-finance-crm_default
+    external: true
