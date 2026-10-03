@@ -4,7 +4,10 @@ Status: **built**. See `00-architecture-and-foundations.md` for the
 stack, formatting rules, auth and error contract this builds on.
 
 - Login screen
-- Accounts list + account detail
+- Accounts list + account detail. The list groups accounts by currency, KZT
+  first, each group headed by «Итого в <код>» with its exact total (summed at
+  the database scale, `sumMoney`). There is no grand total across currencies:
+  the client never converts and the system has no current exchange rate.
 - Add/edit account form. Account types as built: `CASH`, `BANK`, `DEPOSIT`,
   `BROKER` (no card/loan/mortgage types). `CASH` has no bank; every other type
   takes an optional bank picked from `GET /api/v1/banks`, which is a global

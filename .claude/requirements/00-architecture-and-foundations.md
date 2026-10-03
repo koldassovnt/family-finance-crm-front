@@ -170,7 +170,7 @@ screen; everything else is drill-down.
 |--------------------|------------------------------------------------------------------|
 | `/login`           | email + password                                                 |
 | `/`                | **Dashboard** — this month at a glance: account balances, spend vs. income, budget progress bars, bills due or overdue soon |
-| `/accounts`        | account list with balances                                       |
+| `/accounts`        | account list with balances, grouped by currency with a total each |
 | `/accounts/:id`    | account detail + its transaction history + reconcile action      |
 | `/transactions`    | all transactions, filterable by date range, account, category — backed by `GET /api/v1/transactions`; see the section below |
 | `/budgets`         | budgets with usage bars                                          |

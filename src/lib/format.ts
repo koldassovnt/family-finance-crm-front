@@ -24,6 +24,19 @@ export function formatMoneyWithCurrency(value: number, currency: string): string
   return `${formatMoney(value)} ${currencySymbol(currency)}`
 }
 
+/** The backend stores money as NUMERIC(19,4). */
+const MONEY_SCALE = 10_000
+
+/**
+ * Sums amounts in one currency exactly. Float addition drifts
+ * (0.1 + 0.2 = 0.30000000000000004), and a drift that lands on a half-kopeck
+ * boundary flips the last displayed digit. Summing in whole ten-thousandths
+ * keeps the result what the database would add up to.
+ */
+export function sumMoney(values: number[]): number {
+  return values.reduce((sum, value) => sum + Math.round(value * MONEY_SCALE), 0) / MONEY_SCALE
+}
+
 export function currencySymbol(currency: string): string {
   switch (currency) {
     case 'KZT':

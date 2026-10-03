@@ -206,6 +206,8 @@ export const strings = {
     /** Negative is legal — a signal that something is missing, not an error. */
     negativeHint: 'Баланс отрицательный. Возможно, не внесена какая-то операция — сверьте баланс.',
     noBank: 'Без банка',
+    /** Per currency only — balances in different currencies are never summed. */
+    currencyTotal: (currency: string) => `Итого в ${currency}`,
     name: 'Название',
     currency: 'Валюта',
     openingBalance: 'Начальный баланс',

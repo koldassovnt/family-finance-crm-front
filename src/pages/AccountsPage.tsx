@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatMoneyWithCurrency } from '@/lib/format'
+import { formatMoneyWithCurrency, sumMoney } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { strings } from '@/strings'
 
@@ -47,7 +47,6 @@ export function AccountsPage() {
         />
       )}
 
-      {/* Balances are per-currency and never summed — no conversion exists. */}
       <QueryState query={query}>
         {(accounts: Account[]) => (
           <Table>
@@ -60,47 +59,84 @@ export function AccountsPage() {
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {accounts.map((account) => (
-                <TableRow key={account.id}>
-                  <TableCell>
-                    <Link to={`/accounts/${account.id}`} className="underline-offset-4 hover:underline">
-                      {account.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {strings.accounts.types[account.type]}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {account.bank?.name ?? strings.accounts.noBank}
-                  </TableCell>
-                  {/* Negative balances are legal — flagged, never blocked. */}
+            {groupByCurrency(accounts).map((group) => (
+              <TableBody key={group.currency}>
+                <TableRow className="bg-muted/50 font-medium hover:bg-muted/50">
+                  <TableCell colSpan={3}>{strings.accounts.currencyTotal(group.currency)}</TableCell>
                   <TableCell
-                    className={cn(
-                      'text-right tabular-nums',
-                      account.balance < 0 && 'text-destructive',
-                    )}
+                    className={cn('text-right tabular-nums', group.total < 0 && 'text-destructive')}
                   >
-                    {formatMoneyWithCurrency(account.balance, account.currency)}
+                    {formatMoneyWithCurrency(group.total, group.currency)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditing(account)
-                        setIsFormOpen(true)
-                      }}
-                    >
-                      {strings.common.edit}
-                    </Button>
-                  </TableCell>
+                  <TableCell />
                 </TableRow>
-              ))}
-            </TableBody>
+                {group.accounts.map((account) => (
+                  <TableRow key={account.id}>
+                    <TableCell>
+                      <Link to={`/accounts/${account.id}`} className="underline-offset-4 hover:underline">
+                        {account.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {strings.accounts.types[account.type]}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {account.bank?.name ?? strings.accounts.noBank}
+                    </TableCell>
+                    {/* Negative balances are legal — flagged, never blocked. */}
+                    <TableCell
+                      className={cn(
+                        'text-right tabular-nums',
+                        account.balance < 0 && 'text-destructive',
+                      )}
+                    >
+                      {formatMoneyWithCurrency(account.balance, account.currency)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditing(account)
+                          setIsFormOpen(true)
+                        }}
+                      >
+                        {strings.common.edit}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            ))}
           </Table>
         )}
       </QueryState>
     </section>
   )
+}
+
+interface CurrencyGroup {
+  currency: string
+  accounts: Account[]
+  total: number
+}
+
+/**
+ * One group per currency, each with its own total. Nothing converts between
+ * currencies, so no figure spans groups: a grand total would need a rate the
+ * system doesn't have. KZT leads as the base currency, the rest follow by
+ * code, and accounts keep the server's order within a group.
+ */
+function groupByCurrency(accounts: Account[]): CurrencyGroup[] {
+  const byCurrency = new Map<string, Account[]>()
+  for (const account of accounts) {
+    byCurrency.set(account.currency, [...(byCurrency.get(account.currency) ?? []), account])
+  }
+  return [...byCurrency]
+    .sort(([a], [b]) => (a === 'KZT' ? -1 : b === 'KZT' ? 1 : a.localeCompare(b)))
+    .map(([currency, group]) => ({
+      currency,
+      accounts: group,
+      total: sumMoney(group.map((account) => account.balance)),
+    }))
 }
