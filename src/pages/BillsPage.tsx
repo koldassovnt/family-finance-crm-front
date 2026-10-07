@@ -23,7 +23,12 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { currentMonthInAlmaty, formatDate, formatMoneyWithCurrency } from '@/lib/format'
+import {
+  currentMonthInAlmaty,
+  formatDate,
+  formatMoneyWithCurrency,
+  formatMonth,
+} from '@/lib/format'
 import { strings } from '@/strings'
 
 type PendingDelete = { bill: Bill; series: boolean } | null
@@ -37,9 +42,9 @@ export function BillsPage() {
   const queryClient = useQueryClient()
 
   // Two calls, deliberately orthogonal: the grid shows what falls due this
-  // month, the panel shows what is still owed whenever it fell due. A month
-  // query alone would hide an unpaid bill from August the moment you look at
-  // September — which is exactly the bill that needs attention.
+  // month, the panel is cut from everything still owed. The panel can't be
+  // derived from the month query, because it also keeps overdue bills from
+  // other months — see `isInPanel`.
   const monthBills = useQuery({
     queryKey: ['bills', { month }],
     queryFn: () => billsApi.list({ month }),
@@ -48,6 +53,14 @@ export function BillsPage() {
     queryKey: ['bills', { unpaid: true }],
     queryFn: () => billsApi.list({ unpaid: true }),
   })
+
+  // The panel pages with the month selector: a multi-year series would
+  // otherwise list every instalment at once. Overdue bills stay on every page
+  // — hiding an unpaid bill from August the moment you look at September hides
+  // exactly the bill that needs attention. `overdue` is the server's flag.
+  function isInPanel(bill: Bill) {
+    return bill.overdue || bill.dueDate.startsWith(month)
+  }
 
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ['bills'] })
@@ -94,7 +107,7 @@ export function BillsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">{strings.bills.title}</h1>
         <div className="flex flex-wrap items-center gap-2">
-          <MonthSelector month={month} onChange={setMonth} />
+          <MonthSelector month={month} onChange={setMonth} allowFuture />
           <Button variant="outline" onClick={() => setIsBatchOpen(true)}>
             {strings.bills.batchAdd}
           </Button>
@@ -167,71 +180,86 @@ export function BillsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{strings.bills.unpaidPanel}</CardTitle>
+            <CardTitle className="flex flex-wrap items-baseline justify-between gap-x-2 text-base">
+              {strings.bills.unpaidPanel}
+              <span className="text-sm font-normal text-muted-foreground first-letter:uppercase">
+                {formatMonth(month)}
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <QueryState query={unpaidBills} empty={strings.bills.nothingUnpaid}>
-              {(bills: Bill[]) => (
-                <ul className="divide-y">
-                  {bills.map((bill) => (
-                    <li key={bill.id} className="space-y-1 py-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm">{bill.name}</p>
-                          <p className="text-xs text-muted-foreground tabular-nums">
-                            {formatDate(bill.dueDate)}
-                          </p>
+              {(bills: Bill[]) => {
+                const visible = bills.filter(isInPanel)
+                if (visible.length === 0) {
+                  return (
+                    <p className="text-muted-foreground">
+                      {strings.bills.nothingUnpaidThisMonth}
+                    </p>
+                  )
+                }
+                return (
+                  <ul className="divide-y">
+                    {visible.map((bill) => (
+                      <li key={bill.id} className="space-y-1 py-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm">{bill.name}</p>
+                            <p className="text-xs text-muted-foreground tabular-nums">
+                              {formatDate(bill.dueDate)}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            {bill.overdue && (
+                              <Badge variant="destructive">{strings.bills.overdue}</Badge>
+                            )}
+                            <span className="text-sm tabular-nums">
+                              {formatMoneyWithCurrency(bill.amount, bill.currency)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {bill.overdue && (
-                            <Badge variant="destructive">{strings.bills.overdue}</Badge>
-                          )}
-                          <span className="text-sm tabular-nums">
-                            {formatMoneyWithCurrency(bill.amount, bill.currency)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={setPaid.isPending}
-                          onClick={() => setPaid.mutate({ bill, isPaid: true })}
-                        >
-                          {strings.bills.markPaid}
-                        </Button>
-                        <div className="flex flex-wrap gap-1">
-                          {bill.access === 'OWNER' && (
-                            <ShareButton
-                              resourceType="BILL"
-                              resourceId={bill.id}
-                              resourceName={bill.name}
-                            />
-                          )}
-                          {/* The batch id is a convenience handle, not a
-                              grouping that constrains the rows. */}
-                          {bill.batchId !== null && (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={setPaid.isPending}
+                            onClick={() => setPaid.mutate({ bill, isPaid: true })}
+                          >
+                            {strings.bills.markPaid}
+                          </Button>
+                          <div className="flex flex-wrap gap-1">
+                            {bill.access === 'OWNER' && (
+                              <ShareButton
+                                resourceType="BILL"
+                                resourceId={bill.id}
+                                resourceName={bill.name}
+                              />
+                            )}
+                            {/* The batch id is a convenience handle, not a
+                                grouping that constrains the rows. */}
+                            {bill.batchId !== null && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPendingDelete({ bill, series: true })}
+                              >
+                                {strings.bills.deleteSeries}
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setPendingDelete({ bill, series: true })}
+                              onClick={() => setPendingDelete({ bill, series: false })}
                             >
-                              {strings.bills.deleteSeries}
+                              {strings.common.delete}
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setPendingDelete({ bill, series: false })}
-                          >
-                            {strings.common.delete}
-                          </Button>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      </li>
+                    ))}
+                  </ul>
+                )
+              }}
             </QueryState>
             {/* Marking paid sets a flag and creates no transaction — say so,
                 or the ledger and this list quietly disagree. */}

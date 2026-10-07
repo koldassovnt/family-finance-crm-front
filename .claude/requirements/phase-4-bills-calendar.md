@@ -17,6 +17,13 @@ stack, formatting rules, auth and error contract this builds on.
   in earlier months*, which a month grid structurally cannot show. Without it,
   an overdue bill disappears the moment the user pages to the next month. The
   two filters combine, and omitting both returns every bill.
+    - **The panel pages by month, with the calendar's selector.** It shows the
+      unpaid bills due in the selected month plus every bill the server marks
+      `overdue`, whatever month it fell due — so a long series no longer lists
+      every instalment at once, and arrears still never drop out of view. The
+      cut is made client-side from the one `?unpaid=true` response. The
+      selector on this screen can step into future months, unlike the
+      dashboard's and budgets'.
     - **`unpaid=true` is "still owed", not "late".** It includes future due
       dates, so a dashboard attention panel must filter on `overdue` itself
       rather than treating the unpaid list as an arrears list.

@@ -438,6 +438,7 @@ export const strings = {
     calendar: 'Календарь',
     noneThisMonth: 'В этом месяце платежей нет',
     nothingUnpaid: 'Всё оплачено',
+    nothingUnpaidThisMonth: 'В этом месяце платить нечего',
     weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
   },
 } as const
