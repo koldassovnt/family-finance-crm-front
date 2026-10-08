@@ -3,12 +3,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
-import { transactionsApi, type CreateTransactionBody } from '@/api/endpoints'
+import {
+  transactionsApi,
+  type CreateTradeBody,
+  type CreateTransactionBody,
+} from '@/api/endpoints'
 import type { Account, Category, Topic } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -16,7 +21,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldSelect } from '@/components/FieldSelect'
-import { parseMoney, todayInAlmaty } from '@/lib/format'
+import { isInvestmentAccount } from '@/lib/accounts'
+import { formatMoneyWithCurrency, parseMoney, todayInAlmaty } from '@/lib/format'
 import { strings } from '@/strings'
 import {
   refineTransaction,
@@ -37,6 +43,16 @@ interface TransactionFormProps {
   topics?: Topic[]
   /** Pre-fills the form — used by the goals page to contribute to a goal. */
   defaults?: Partial<TransactionFormValues>
+  /**
+   * Records a position that is already held instead of an ordinary operation.
+   *
+   * An OPENING is a trade to the API, but not to the person entering it: it
+   * moves no cash, and it is how a portfolio that predates the app gets in at
+   * all. Offered as a third side beside Buy and Sell it would read as one more
+   * kind of deal, so it has its own entry point and this flag strips the form
+   * down to it — no type, no side. Pass only investment accounts.
+   */
+  opening?: boolean
 }
 
 export function TransactionForm({
@@ -46,6 +62,7 @@ export function TransactionForm({
   categories,
   topics = [],
   defaults,
+  opening = false,
 }: TransactionFormProps) {
   const queryClient = useQueryClient()
 
@@ -62,7 +79,12 @@ export function TransactionForm({
       topicId: NO_TOPIC,
       occurredOn: todayInAlmaty(),
       note: '',
+      tradeSide: 'BUY',
+      ticker: '',
+      quantity: '',
+      unitPrice: '',
       ...defaults,
+      ...(opening ? { type: 'TRADE', tradeSide: 'OPENING' } : {}),
     },
   })
 
@@ -74,11 +96,17 @@ export function TransactionForm({
   const toAccountId = useWatch({ control, name: 'toAccountId' })
   const categoryId = useWatch({ control, name: 'categoryId' })
   const topicId = useWatch({ control, name: 'topicId' })
+  const tradeSide = useWatch({ control, name: 'tradeSide' })
+  const quantity = useWatch({ control, name: 'quantity' })
+  const unitPrice = useWatch({ control, name: 'unitPrice' })
 
   const source = accounts.find((account) => account.id === accountId)
   const destination = accounts.find((account) => account.id === toAccountId)
 
   const isTransfer = type === 'TRANSFER'
+  const isTrade = type === 'TRADE'
+  const isInvestment = source !== undefined && isInvestmentAccount(source.type)
+  const currencySuffix = source === undefined ? '' : `, ${source.currency}`
   const needsExchangeRate = source !== undefined && source.currency !== 'KZT'
   const needsToAmount =
     isTransfer &&
@@ -86,20 +114,61 @@ export function TransactionForm({
     destination !== undefined &&
     source.currency !== destination.currency
 
+  // Shown under the price so the cash a trade will move is visible before it
+  // is saved. Display only — the server derives the amount itself and rejects
+  // one that is sent. NaN while either input is unfinished, hence the `> 0`
+  // guard where it is rendered.
+  const tradeTotal = parseMoney(quantity ?? '') * parseMoney(unitPrice ?? '')
+
   // An EXPENSE needs an EXPENSE category and INCOME needs INCOME — a mismatch
   // is a data error, not a preference, so the picker never offers one.
   const selectableCategories = categories.filter(
     (category) => category.kind === (type === 'INCOME' ? 'INCOME' : 'EXPENSE'),
   )
 
+  /**
+   * The account decides which types are on offer, so choosing one can strand
+   * the current type. A broker or crypto account takes only transfers and
+   * trades — a frontend rule: the backend still accepts income and expense
+   * there — and no other account can take a trade at all.
+   */
+  function selectAccount(value: string) {
+    form.setValue('accountId', value)
+    const next = accounts.find((account) => account.id === value)
+    const investment = next !== undefined && isInvestmentAccount(next.type)
+    if (investment && (type === 'INCOME' || type === 'EXPENSE')) form.setValue('type', 'TRADE')
+    if (!investment && type === 'TRADE') form.setValue('type', 'EXPENSE')
+  }
+
+  const typeOptions = isInvestment
+    ? [
+        { value: 'TRADE', label: strings.transactions.types.TRADE },
+        { value: 'TRANSFER', label: strings.transactions.types.TRANSFER },
+      ]
+    : [
+        { value: 'EXPENSE', label: strings.transactions.types.EXPENSE },
+        { value: 'INCOME', label: strings.transactions.types.INCOME },
+        { value: 'TRANSFER', label: strings.transactions.types.TRANSFER },
+      ]
+
   const mutation = useMutation({
     mutationFn: (values: TransactionFormOutput) => transactionsApi.create(toRequestBody(values)),
     onSuccess: () => {
-      // A transaction moves balances and feeds every month-scoped total.
-      for (const key of ['transactions', 'accounts', 'summary', 'budgets', 'goals']) {
+      // A transaction moves balances and feeds every month-scoped total; a
+      // trade also changes what is held.
+      for (const key of [
+        'transactions',
+        'account-transactions',
+        'accounts',
+        'summary',
+        'budgets',
+        'goals',
+        'investments',
+        'account-holdings',
+      ]) {
         void queryClient.invalidateQueries({ queryKey: [key] })
       }
-      toast.success(strings.transactions.saved)
+      toast.success(opening ? strings.investments.openingSaved : strings.transactions.saved)
       form.reset()
       onOpenChange(false)
     },
@@ -118,7 +187,10 @@ export function TransactionForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{strings.transactions.addTitle}</DialogTitle>
+          <DialogTitle>
+            {opening ? strings.investments.openingTitle : strings.transactions.addTitle}
+          </DialogTitle>
+          {opening && <DialogDescription>{strings.investments.openingHint}</DialogDescription>}
         </DialogHeader>
 
         <form
@@ -126,30 +198,23 @@ export function TransactionForm({
           className="space-y-4"
           onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
         >
-          <Field label={strings.transactions.type} error={form.formState.errors.type?.message}>
-            <FieldSelect
-              value={type}
-              onChange={(value) =>
-                form.setValue('type', value as 'INCOME' | 'EXPENSE' | 'TRANSFER')
-              }
-              options={[
-                { value: 'EXPENSE', label: strings.transactions.types.EXPENSE },
-                { value: 'INCOME', label: strings.transactions.types.INCOME },
-                { value: 'TRANSFER', label: strings.transactions.types.TRANSFER },
-              ]}
-            />
-          </Field>
-
+          {/* The account leads because it decides which types are offered. */}
           <Field
             label={isTransfer ? strings.transactions.fromAccount : strings.transactions.account}
             error={form.formState.errors.accountId?.message}
           >
-            <AccountSelect
-              value={accountId}
-              onChange={(value) => form.setValue('accountId', value)}
-              accounts={accounts}
-            />
+            <AccountSelect value={accountId} onChange={selectAccount} accounts={accounts} />
           </Field>
+
+          {!opening && (
+            <Field label={strings.transactions.type} error={form.formState.errors.type?.message}>
+              <FieldSelect
+                value={type}
+                onChange={(value) => form.setValue('type', value as TransactionFormValues['type'])}
+                options={typeOptions}
+              />
+            </Field>
+          )}
 
           {isTransfer && (
             <Field
@@ -164,12 +229,73 @@ export function TransactionForm({
             </Field>
           )}
 
-          <Field
-            label={`${strings.transactions.amount}${source === undefined ? '' : `, ${source.currency}`}`}
-            error={form.formState.errors.amount?.message}
-          >
-            <Input inputMode="decimal" placeholder="0,00" {...form.register('amount')} />
-          </Field>
+          {/* A trade has no amount input: the server derives it as quantity ×
+              price and answers 400 if one is sent. */}
+          {!isTrade && (
+            <Field
+              label={`${strings.transactions.amount}${currencySuffix}`}
+              error={form.formState.errors.amount?.message}
+            >
+              <Input inputMode="decimal" placeholder="0,00" {...form.register('amount')} />
+            </Field>
+          )}
+
+          {isTrade && (
+            <>
+              {!opening && (
+                <Field
+                  label={strings.investments.side}
+                  error={form.formState.errors.tradeSide?.message}
+                >
+                  <FieldSelect
+                    value={tradeSide ?? 'BUY'}
+                    onChange={(value) => form.setValue('tradeSide', value as 'BUY' | 'SELL')}
+                    options={[
+                      { value: 'BUY', label: strings.investments.sides.BUY },
+                      { value: 'SELL', label: strings.investments.sides.SELL },
+                    ]}
+                  />
+                </Field>
+              )}
+
+              <Field
+                label={strings.investments.ticker}
+                error={form.formState.errors.ticker?.message}
+              >
+                {/* Uppercased by the server; shown that way so the saved row
+                    is no surprise. */}
+                <Input
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  maxLength={32}
+                  className="uppercase"
+                  {...form.register('ticker')}
+                />
+              </Field>
+
+              {/* Fractional on purpose — a crypto position is rarely whole. */}
+              <Field
+                label={opening ? strings.investments.openingQuantity : strings.investments.quantity}
+                error={form.formState.errors.quantity?.message}
+              >
+                <Input inputMode="decimal" placeholder="0" {...form.register('quantity')} />
+              </Field>
+
+              {/* Per unit in the account's currency: there is no instrument
+                  currency, a EUR stock is bought from a EUR account. */}
+              <Field
+                label={`${opening ? strings.investments.averagePrice : strings.investments.unitPrice}${currencySuffix}`}
+                error={form.formState.errors.unitPrice?.message}
+                hint={
+                  source !== undefined && tradeTotal > 0
+                    ? `${strings.investments.tradeTotal}: ${formatMoneyWithCurrency(tradeTotal, source.currency)}`
+                    : undefined
+                }
+              >
+                <Input inputMode="decimal" placeholder="0,00" {...form.register('unitPrice')} />
+              </Field>
+            </>
+          )}
 
           {/* Only when the currencies actually differ: sending it otherwise is
               a 400, not a harmless extra field. */}
@@ -192,8 +318,9 @@ export function TransactionForm({
             </Field>
           )}
 
-          {/* A transfer carries no category at all and one is rejected. */}
-          {!isTransfer && (
+          {/* A transfer carries no category at all and one is rejected; the
+              same goes for a trade. */}
+          {!isTransfer && !isTrade && (
             <Field label={strings.transactions.category}>
               <FieldSelect
                 value={categoryId ?? NO_CATEGORY}
@@ -211,8 +338,9 @@ export function TransactionForm({
 
           {/* Same show/hide rule as the category picker: a TRANSFER or
               ADJUSTMENT cannot belong to a topic, since attaching a transfer
-              would count both the withdrawal and the thing it paid for. */}
-          {!isTransfer && (
+              would count both the withdrawal and the thing it paid for. A
+              trade is rejected likewise — it is not spending. */}
+          {!isTransfer && !isTrade && (
             <Field label={strings.topics.topicField}>
               <FieldSelect
                 value={topicId ?? NO_TOPIC}
@@ -226,7 +354,7 @@ export function TransactionForm({
           )}
 
           <Field
-            label={strings.transactions.date}
+            label={opening ? strings.investments.openingDate : strings.transactions.date}
             error={form.formState.errors.occurredOn?.message}
           >
             {/* Capped at today in Almaty — a future date is rejected, since a
@@ -234,7 +362,11 @@ export function TransactionForm({
             <Input type="date" max={todayInAlmaty()} {...form.register('occurredOn')} />
           </Field>
 
-          <Field label={strings.transactions.note} error={form.formState.errors.note?.message}>
+          <Field
+            label={strings.transactions.note}
+            error={form.formState.errors.note?.message}
+            hint={isTrade ? strings.investments.noteHint : undefined}
+          >
             <Input {...form.register('note')} />
           </Field>
 
@@ -253,7 +385,9 @@ export function TransactionForm({
 }
 
 /** Maps the form's strings onto the request, omitting what must not be sent. */
-function toRequestBody(values: TransactionFormOutput): CreateTransactionBody {
+function toRequestBody(values: TransactionFormOutput): CreateTransactionBody | CreateTradeBody {
+  if (values.type === 'TRADE') return toTradeBody(values)
+
   const body: CreateTransactionBody = {
     type: values.type,
     amount: values.amount,
@@ -274,6 +408,30 @@ function toRequestBody(values: TransactionFormOutput): CreateTransactionBody {
 
   const toAmount = parseMoney(values.toAmount ?? '')
   if (!Number.isNaN(toAmount) && toAmount > 0) body.toAmount = toAmount
+
+  const exchangeRate = parseMoney(values.exchangeRate ?? '')
+  if (!Number.isNaN(exchangeRate) && exchangeRate > 0) body.exchangeRate = exchangeRate
+
+  if (values.note.trim() !== '') body.note = values.note.trim()
+
+  return body
+}
+
+/**
+ * A trade's body shares almost nothing with the others: no `amount`, no second
+ * account, no category or topic — each of those is a 400 here, so they are
+ * left out rather than sent empty.
+ */
+function toTradeBody(values: TransactionFormOutput): CreateTradeBody {
+  const body: CreateTradeBody = {
+    type: 'TRADE',
+    accountId: values.accountId,
+    tradeSide: values.tradeSide ?? 'BUY',
+    ticker: (values.ticker ?? '').trim(),
+    quantity: parseMoney(values.quantity ?? ''),
+    unitPrice: parseMoney(values.unitPrice ?? ''),
+    occurredOn: values.occurredOn,
+  }
 
   const exchangeRate = parseMoney(values.exchangeRate ?? '')
   if (!Number.isNaN(exchangeRate) && exchangeRate > 0) body.exchangeRate = exchangeRate
