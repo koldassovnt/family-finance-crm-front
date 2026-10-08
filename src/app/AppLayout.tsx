@@ -8,6 +8,7 @@ const navItems = [
   { to: '/', label: strings.nav.dashboard, end: true },
   { to: '/accounts', label: strings.nav.accounts },
   { to: '/transactions', label: strings.nav.transactions },
+  { to: '/investments', label: strings.nav.investments },
   { to: '/budgets', label: strings.nav.budgets },
   { to: '/goals', label: strings.nav.goals },
   { to: '/bills', label: strings.nav.bills },

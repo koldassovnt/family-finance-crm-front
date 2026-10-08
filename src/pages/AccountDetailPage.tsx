@@ -5,6 +5,7 @@ import { accountsApi } from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { ReconcileDialog } from '@/components/accounts/ReconcileDialog'
+import { HoldingsTable } from '@/components/investments/HoldingsTable'
 import { ShareButton } from '@/components/sharing/ShareButton'
 import { ViewerNotice } from '@/components/sharing/ViewerNotice'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -20,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { accountNameLookup } from '@/lib/accounts'
+import { accountNameLookup, isInvestmentAccount } from '@/lib/accounts'
 import { currentMonthInAlmaty, formatDate, formatMoneyWithCurrency, todayInAlmaty } from '@/lib/format'
 import { tradeDetails, transactionTitle } from '@/lib/transactions'
 import { cn } from '@/lib/utils'
@@ -57,6 +58,15 @@ export function AccountDetailPage() {
   const history = useQuery({
     queryKey: ['account-transactions', id, { from, to }],
     queryFn: () => accountsApi.transactions(id, from, to),
+  })
+
+  // Asked only of an account that can hold positions. Unlike `GET /investments`
+  // this one answers a viewer too, so a shared broker account shows its assets.
+  const holdsPositions = account.data !== undefined && isInvestmentAccount(account.data.type)
+  const holdings = useQuery({
+    queryKey: ['account-holdings', id],
+    queryFn: () => accountsApi.holdings(id),
+    enabled: holdsPositions,
   })
 
   return (
@@ -117,6 +127,24 @@ export function AccountDetailPage() {
           </>
         )}
       </QueryState>
+
+      {holdsPositions && (
+        <>
+          <div className="pt-2">
+            <h2 className="text-lg font-medium">{strings.investments.holdings}</h2>
+            <p className="text-xs text-muted-foreground">{strings.investments.costHint}</p>
+          </div>
+          <QueryState query={holdings}>
+            {(data) =>
+              data.holdings.length === 0 ? (
+                <p className="text-muted-foreground">{strings.investments.empty}</p>
+              ) : (
+                <HoldingsTable data={data} showAccount={false} />
+              )
+            }
+          </QueryState>
+        </>
+      )}
 
       <h2 className="pt-2 text-lg font-medium">{strings.accounts.history}</h2>
 

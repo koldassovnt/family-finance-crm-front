@@ -8,6 +8,7 @@ import { BudgetsPage } from '@/pages/BudgetsPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { GoalsPage } from '@/pages/GoalsPage'
+import { InvestmentsPage } from '@/pages/InvestmentsPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PasswordPage } from '@/pages/PasswordPage'
 import { SharedPage } from '@/pages/SharedPage'
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
           { path: '/accounts', element: <AccountsPage /> },
           { path: '/accounts/:id', element: <AccountDetailPage /> },
           { path: '/transactions', element: <TransactionsPage /> },
+          { path: '/investments', element: <InvestmentsPage /> },
           { path: '/budgets', element: <BudgetsPage /> },
           { path: '/goals', element: <GoalsPage /> },
           { path: '/bills', element: <BillsPage /> },
