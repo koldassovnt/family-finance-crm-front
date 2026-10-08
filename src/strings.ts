@@ -60,6 +60,7 @@ export const strings = {
     net: 'Итого',
     spent: 'Потрачено',
     spendingByCategory: 'Расходы по категориям',
+    noExpenses: 'В этом месяце расходов нет',
     expensesShare: 'Доля расходов',
     incomeByCategory: 'Доходы по категориям',
     incomeShare: 'Доля доходов',
