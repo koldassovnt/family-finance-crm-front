@@ -181,6 +181,7 @@ screen; everything else is drill-down.
 | `/settings/users`  | `OWNER` only — create additional users (unused while single-user). Create-only: `GET /api/v1/users/me` returns just the caller and there is no list-users endpoint, so don't design a user table |
 | `/topics`          | «События» — undertakings with their totals                       |
 | `/topics/:id`      | one event: figures, category breakdown, attached transactions    |
+| `/investments`     | holdings across your own broker and crypto accounts, at purchase cost, grouped by currency — see `phase-5-investments.md` |
 
 Charts (Recharts) appear on the dashboard, `/budgets` and `/topics/:id`:
 spending by category, and budget usage vs. limit. Deliberately few — the

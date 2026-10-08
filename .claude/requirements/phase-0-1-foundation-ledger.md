@@ -9,7 +9,7 @@ stack, formatting rules, auth and error contract this builds on.
   the database scale, `sumMoney`). There is no grand total across currencies:
   the client never converts and the system has no current exchange rate.
 - Add/edit account form. Account types as built: `CASH`, `BANK`, `DEPOSIT`,
-  `BROKER` (no card/loan/mortgage types). `CASH` has no bank; every other type
+  `BROKER`, and `CRYPTO` since phase 5 (no card/loan/mortgage types). `CASH` has no bank; every other type
   takes an optional bank picked from `GET /api/v1/banks`, which is a global
   list — `POST /api/v1/banks` is find-or-create by name, so a combobox that
   creates on the fly is the right control. Only `name` and `bankId` are

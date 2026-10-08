@@ -14,13 +14,15 @@ truth about the code.
 | [Phase 0 + 1](phase-0-1-ledger.md) | Accounts, transactions, reconcile, summary | **Done** |
 | [Phase 2](phase-2-budgets-goals.md) | Budgets, goals | **Done** |
 | [Phase 4](phase-4-bills.md) | Bills, due-date calendar | **Done** |
+| [Phase 5](phase-5-investments.md) | Trades, holdings at cost, crypto accounts | **Built, not yet driven against the backend** |
 | [Phase 7](phase-7-topics.md) | Topics («События») — a lens over the ledger | **Done** |
 | [Settings](settings.md) | Category tree, password, user creation | **Done** |
 | [Phase 8](phase-8-sharing.md) | Per-resource read-only sharing between members | **Done** |
 
-Phases 5–6 (investments, net worth) are out of scope; Phase 3 was dropped
-before any work started. Phase 7 arrived on the backend after this
-frontend was underway and was scheduled after bills.
+Phase 6 (net worth) is out of scope; Phase 3 was dropped before any work
+started. Phase 7 arrived on the backend after this frontend was underway and
+was scheduled after bills. Phase 5 was parked until 2026-10-08, when the
+backend built it; it covers cost only — prices and valuation come later.
 
 ## Conventions for this log
 
