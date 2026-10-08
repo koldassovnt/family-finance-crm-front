@@ -90,6 +90,16 @@ export function formatUnitPrice(value: number): string {
   return unitPriceFormatter.format(value)
 }
 
+/**
+ * A quantity or unit price as text for an input, to its full 10 decimals with
+ * the trailing zeros dropped. `String(0.00000041)` is "4.1e-7", which
+ * {@link parseMoney} rightly refuses — so an edit form seeded that way would
+ * hold a value it cannot read back.
+ */
+export function toPlainDecimal(value: number): string {
+  return value.toFixed(10).replace(/\.?0+$/, '')
+}
+
 const smallAveragePriceFormatter = new Intl.NumberFormat('ru-RU', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 8,

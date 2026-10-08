@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { formatDate, formatMoneyWithCurrency } from '@/lib/format'
+import { transactionTitle } from '@/lib/transactions'
 import { strings } from '@/strings'
 
 /**
@@ -32,17 +33,34 @@ export function DeleteTransactionDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  const isTrade = transaction?.type === 'TRADE'
 
   const mutation = useMutation({
     mutationFn: (id: string) => transactionsApi.remove(id),
     onSuccess: () => {
-      for (const key of ['transactions', 'account-transactions', 'accounts', 'summary', 'budgets', 'goals']) {
+      for (const key of [
+        'transactions',
+        'account-transactions',
+        'accounts',
+        'summary',
+        'budgets',
+        'goals',
+        'investments',
+        'account-holdings',
+      ]) {
         void queryClient.invalidateQueries({ queryKey: [key] })
       }
       toast.success(strings.transactions.deleted)
       onOpenChange(false)
     },
     onError: (error) => {
+      // Deleting a purchase whose units were later sold would leave the
+      // ticker oversold, so the server refuses with a CONFLICT — the only one
+      // deleting a trade can produce. The sale has to go first.
+      if (isTrade && error instanceof ApiError && error.code === 'CONFLICT') {
+        toast.error(strings.investments.oversold)
+        return
+      }
       toast.error(error instanceof ApiError ? error.message : strings.common.error)
     },
   })
@@ -56,11 +74,12 @@ export function DeleteTransactionDialog({
             {transaction !== null && (
               <>
                 {formatDate(transaction.occurredOn)} ·{' '}
+                {isTrade && <>{transactionTitle(transaction)} · </>}
                 {formatMoneyWithCurrency(transaction.amount, transaction.currency)}
                 <br />
               </>
             )}
-            {strings.transactions.deleteWarning}
+            {isTrade ? strings.investments.deleteWarning : strings.transactions.deleteWarning}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

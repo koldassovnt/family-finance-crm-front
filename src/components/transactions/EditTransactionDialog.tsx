@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldSelect } from '@/components/FieldSelect'
-import { parseMoney, todayInAlmaty } from '@/lib/format'
+import { parseMoney, toPlainDecimal, todayInAlmaty } from '@/lib/format'
 import { strings } from '@/strings'
 
 const NO_CATEGORY = 'none'
@@ -29,6 +29,10 @@ const NO_CATEGORY = 'none'
  * server requires `amount` and `toAmount` in the same request, because moving
  * one side without the other leaves the two implying a rate that no longer
  * holds. So both inputs are shown together and submitted together.
+ *
+ * A trade swaps the amount for the three things it is derived from — ticker,
+ * quantity and unit price — because PATCH rejects `amount` there. Its side is
+ * as immutable as its type.
  */
 export function EditTransactionDialog({
   transaction,
@@ -47,8 +51,16 @@ export function EditTransactionDialog({
   // lookup needed to tell.
   const isCrossCurrency = transaction.type === 'TRANSFER' && transaction.toAmount !== null
   const isTransfer = transaction.type === 'TRANSFER'
+  const isTrade = transaction.type === 'TRADE'
   const needsRate = transaction.currency !== 'KZT'
 
+  const [ticker, setTicker] = useState(transaction.ticker ?? '')
+  const [quantity, setQuantity] = useState(
+    transaction.quantity === null ? '' : toPlainDecimal(transaction.quantity),
+  )
+  const [unitPrice, setUnitPrice] = useState(
+    transaction.unitPrice === null ? '' : toPlainDecimal(transaction.unitPrice),
+  )
   const [amount, setAmount] = useState(String(transaction.amount))
   const [toAmount, setToAmount] = useState(
     transaction.toAmount === null ? '' : String(transaction.toAmount),
@@ -62,7 +74,16 @@ export function EditTransactionDialog({
   const mutation = useMutation({
     mutationFn: () => transactionsApi.update(transaction.id, buildPatch()),
     onSuccess: () => {
-      for (const key of ['transactions', 'account-transactions', 'accounts', 'summary', 'budgets', 'goals']) {
+      for (const key of [
+        'transactions',
+        'account-transactions',
+        'accounts',
+        'summary',
+        'budgets',
+        'goals',
+        'investments',
+        'account-holdings',
+      ]) {
         void queryClient.invalidateQueries({ queryKey: [key] })
       }
       toast.success(strings.transactions.updated)
@@ -71,6 +92,12 @@ export function EditTransactionDialog({
     onError: (error) => {
       if (error instanceof ApiError && error.hasFieldErrors) {
         setFieldErrors(error.fieldErrors)
+        return
+      }
+      // Shrinking a purchase below what was later sold. The only CONFLICT a
+      // trade edit can produce, and it carries no field errors.
+      if (isTrade && error instanceof ApiError && error.code === 'CONFLICT') {
+        toast.error(strings.investments.oversold)
         return
       }
       toast.error(error instanceof ApiError ? error.message : strings.common.error)
@@ -85,8 +112,27 @@ export function EditTransactionDialog({
   function buildPatch() {
     const patch: Parameters<typeof transactionsApi.update>[1] = {}
 
+    if (isTrade) {
+      // Compared uppercased: the server stores it that way, so retyping the
+      // same ticker in lower case is not a change.
+      const nextTicker = ticker.trim().toUpperCase()
+      if (nextTicker !== '' && nextTicker !== transaction.ticker) patch.ticker = nextTicker
+
+      const parsedQuantity = parseMoney(quantity)
+      if (!Number.isNaN(parsedQuantity) && parsedQuantity !== transaction.quantity) {
+        patch.quantity = parsedQuantity
+      }
+
+      const parsedPrice = parseMoney(unitPrice)
+      if (!Number.isNaN(parsedPrice) && parsedPrice !== transaction.unitPrice) {
+        patch.unitPrice = parsedPrice
+      }
+    }
+
+    // Never on a trade: its amount is derived, and sending one is a 400.
     const parsedAmount = parseMoney(amount)
-    const amountChanged = !Number.isNaN(parsedAmount) && parsedAmount !== transaction.amount
+    const amountChanged =
+      !isTrade && !Number.isNaN(parsedAmount) && parsedAmount !== transaction.amount
     if (amountChanged) patch.amount = parsedAmount
 
     if (isCrossCurrency) {
@@ -109,7 +155,7 @@ export function EditTransactionDialog({
 
     if (occurredOn !== transaction.occurredOn) patch.occurredOn = occurredOn
 
-    if (!isTransfer) {
+    if (!isTransfer && !isTrade) {
       const current = transaction.category?.id ?? NO_CATEGORY
       if (categoryId !== current) {
         // Explicit null clears it; a real id sets it.
@@ -132,20 +178,56 @@ export function EditTransactionDialog({
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{strings.transactions.editTitle}</DialogTitle>
-          <DialogDescription>{strings.transactions.immutableHint}</DialogDescription>
+          <DialogDescription>
+            {isTrade ? strings.investments.immutableHint : strings.transactions.immutableHint}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <EditField
-            label={`${strings.transactions.amount}, ${transaction.currency}`}
-            error={fieldErrors.amount}
-          >
-            <Input
-              inputMode="decimal"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-            />
-          </EditField>
+          {isTrade ? (
+            <>
+              <EditField label={strings.investments.ticker} error={fieldErrors.ticker}>
+                <Input
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  maxLength={32}
+                  className="uppercase"
+                  value={ticker}
+                  onChange={(event) => setTicker(event.target.value)}
+                />
+              </EditField>
+
+              <EditField label={strings.investments.quantity} error={fieldErrors.quantity}>
+                <Input
+                  inputMode="decimal"
+                  value={quantity}
+                  onChange={(event) => setQuantity(event.target.value)}
+                />
+              </EditField>
+
+              <EditField
+                label={`${strings.investments.unitPrice}, ${transaction.currency}`}
+                error={fieldErrors.unitPrice}
+              >
+                <Input
+                  inputMode="decimal"
+                  value={unitPrice}
+                  onChange={(event) => setUnitPrice(event.target.value)}
+                />
+              </EditField>
+            </>
+          ) : (
+            <EditField
+              label={`${strings.transactions.amount}, ${transaction.currency}`}
+              error={fieldErrors.amount}
+            >
+              <Input
+                inputMode="decimal"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+              />
+            </EditField>
+          )}
 
           {isCrossCurrency && (
             <EditField
@@ -175,7 +257,7 @@ export function EditTransactionDialog({
             </EditField>
           )}
 
-          {!isTransfer && (
+          {!isTransfer && !isTrade && (
             <EditField label={strings.transactions.category} error={fieldErrors.categoryId}>
               <FieldSelect
                 value={categoryId}
