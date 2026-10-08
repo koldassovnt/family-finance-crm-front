@@ -9,10 +9,12 @@ import type {
   BudgetPeriod,
   Category,
   Goal,
+  Holdings,
   LoginResponse,
   MonthlySummary,
   Topic,
   TopicDetail,
+  TradeSide,
   Transaction,
   User,
 } from './types'
@@ -72,6 +74,16 @@ export const accountsApi = {
   /** `from`/`to` required, one year max. A transfer appears for both sides. */
   transactions: (id: string, from: string, to: string) =>
     request<Transaction[]>(`${V1}/accounts/${id}/transactions`, { query: { from, to } }),
+  /**
+   * One account's positions. Readable by a viewer of a shared account, unlike
+   * `GET /investments`. Empty lists for an account with no trades.
+   */
+  holdings: (id: string) => request<Holdings>(`${V1}/accounts/${id}/holdings`),
+}
+
+export const investmentsApi = {
+  /** Everything held across the caller's own accounts — never shared ones. */
+  holdings: () => request<Holdings>(`${V1}/investments`),
 }
 
 export const banksApi = {
@@ -134,7 +146,7 @@ export const topicsApi = {
 }
 
 export interface CreateTransactionBody {
-  type: Exclude<Transaction['type'], 'ADJUSTMENT'>
+  type: Exclude<Transaction['type'], 'ADJUSTMENT' | 'TRADE'>
   amount: number
   accountId: string
   /** TRANSFER only. */
@@ -151,6 +163,31 @@ export interface CreateTransactionBody {
   note?: string
 }
 
+/**
+ * A trade is its own body rather than more optional fields on the one above,
+ * because the two reject each other's fields: `amount`, `toAccountId`,
+ * `toAmount`, `categoryId` and `topicId` are a 400 on a TRADE, and the trade
+ * fields are a 400 on anything else. `amount` is derived as
+ * `quantity × unitPrice`, so there is nothing to send.
+ */
+export interface CreateTradeBody {
+  type: 'TRADE'
+  /** Must be a BROKER or CRYPTO account. */
+  accountId: string
+  tradeSide: TradeSide
+  /** Trimmed and uppercased by the server; 32 characters at most. */
+  ticker: string
+  /** > 0, at most 10 decimal places. */
+  quantity: number
+  /** > 0, per unit in the account's currency, at most 10 decimal places. */
+  unitPrice: number
+  /** Required when the account isn't KZT; absent or 1 when it is. */
+  exchangeRate?: number
+  occurredOn?: string
+  /** Where the kind of asset goes — stock, ETF, bond, coin. */
+  note?: string
+}
+
 export const transactionsApi = {
   /** Cross-account list. `from`/`to` required, one year max, newest first. */
   list: (params: {
@@ -161,7 +198,8 @@ export const transactionsApi = {
     topicId?: string
   }) =>
     request<Transaction[]>(`${V1}/transactions`, { query: params }),
-  create: (body: CreateTransactionBody) =>
+  /** A SELL of more than the account holds is a 400 on `quantity`. */
+  create: (body: CreateTransactionBody | CreateTradeBody) =>
     request<Transaction>(`${V1}/transactions`, { method: 'POST', body }),
   /**
    * Amount, destination amount, rate, date, category and note only — type and
@@ -170,6 +208,10 @@ export const transactionsApi = {
    * `toAmount` is valid only on a cross-currency transfer, and changing
    * `amount` on one requires sending `toAmount` with it: each side then moves
    * by its own figure in a single pass.
+   *
+   * A trade takes `ticker`, `quantity`, `unitPrice`, rate, date and note
+   * instead; `amount` is a 400 there and the side is immutable. 409 when the
+   * edit would leave more of a ticker sold than bought.
    */
   update: (
     id: string,
@@ -182,11 +224,18 @@ export const transactionsApi = {
       /** Explicit null detaches from its topic. */
       topicId?: string | null
       note?: string | null
+      ticker?: string
+      quantity?: number
+      unitPrice?: number
     },
   ) => request<Transaction>(`${V1}/transactions/${id}`, { method: 'PATCH', body }),
-  /** Soft delete, but it reverses the balance effect — confirm first. */
+  /**
+   * Soft delete, but it reverses the balance effect — confirm first. On a
+   * trade the holdings recompute too, and it is a 409 when that would leave
+   * more of a ticker sold than bought.
+   */
   remove: (id: string) => request<void>(`${V1}/transactions/${id}`, { method: 'DELETE' }),
-  /** Always KZT; TRANSFER and ADJUSTMENT excluded. */
+  /** Always KZT; TRANSFER, ADJUSTMENT and TRADE excluded. */
   summary: (month: string) =>
     request<MonthlySummary>(`${V1}/transactions/summary`, { query: { month } }),
 }

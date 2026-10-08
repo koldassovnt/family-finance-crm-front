@@ -20,7 +20,7 @@ import { parseMoney } from '@/lib/format'
 import { strings } from '@/strings'
 import { BankCombobox } from './BankCombobox'
 
-const ACCOUNT_TYPES: AccountType[] = ['CASH', 'BANK', 'DEPOSIT', 'BROKER']
+const ACCOUNT_TYPES: AccountType[] = ['CASH', 'BANK', 'DEPOSIT', 'BROKER', 'CRYPTO']
 
 /**
  * Creating and editing an account are different shapes, so this handles both

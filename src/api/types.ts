@@ -9,9 +9,15 @@
  */
 
 export type UserRole = 'OWNER' | 'MEMBER'
-export type AccountType = 'CASH' | 'BANK' | 'DEPOSIT' | 'BROKER'
+/** `BROKER` and `CRYPTO` behave alike: both hold positions and accept trades. */
+export type AccountType = 'CASH' | 'BANK' | 'DEPOSIT' | 'BROKER' | 'CRYPTO'
 export type CategoryKind = 'EXPENSE' | 'INCOME'
-export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'ADJUSTMENT'
+export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'ADJUSTMENT' | 'TRADE'
+/**
+ * `OPENING` records a position that was already held: it counts toward the
+ * holding at the price entered and moves no cash.
+ */
+export type TradeSide = 'BUY' | 'SELL' | 'OPENING'
 export type GoalType = 'SAVINGS' | 'EMERGENCY_FUND'
 export type GoalStatus = 'ACTIVE' | 'ABANDONED' | 'ARCHIVED'
 export type BudgetPeriod = 'MONTHLY'
@@ -161,6 +167,56 @@ export interface Transaction {
    */
   topic: TransactionTopic | null
   note: string | null
+  /**
+   * The four trade fields are null unless `type` is `TRADE`. On a trade,
+   * `amount` is derived server-side as `quantity × unitPrice`.
+   */
+  tradeSide: TradeSide | null
+  ticker: string | null
+  /** Up to 10 decimals on reads (`1.0000000000`) — never money, format it. */
+  quantity: number | null
+  /** Per unit, in the account's currency. There is no instrument currency. */
+  unitPrice: number | null
+}
+
+/**
+ * One ticker in one account — the same ticker in two accounts is two rows.
+ *
+ * Every figure is what the units **cost**, not what they are worth: there is
+ * no price feed yet. Don't label any of it a value.
+ */
+export interface Holding {
+  ticker: string
+  accountId: string
+  accountName: string
+  accountType: AccountType
+  currency: string
+  quantity: number
+  /**
+   * Weighted average paid per unit. Derived, so with a tiny quantity it can
+   * differ from the typed price in the last decimals — round for display.
+   */
+  averagePrice: number
+  /** Uses each purchase's own rate, so it is not `averagePrice × one rate`. */
+  averagePriceKzt: number
+  /** What the units still held cost. */
+  cost: number
+  costKzt: number
+}
+
+export interface HoldingCurrencyTotal {
+  currency: string
+  cost: number
+  costKzt: number
+}
+
+/** `GET /investments` and `GET /accounts/{id}/holdings` share this shape. */
+export interface Holdings {
+  /** Sorted by ticker, then account name. Positions sold to zero are absent. */
+  holdings: Holding[]
+  /** Sorted by currency. */
+  totalsByCurrency: HoldingCurrencyTotal[]
+  totalCostKzt: number
 }
 
 export type TopicStatus = 'ACTIVE' | 'CLOSED'

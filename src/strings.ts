@@ -226,6 +226,7 @@ export const strings = {
       BANK: 'Банковский счёт',
       DEPOSIT: 'Депозит',
       BROKER: 'Брокерский счёт',
+      CRYPTO: 'Криптосчёт',
     },
   },
 
@@ -236,6 +237,7 @@ export const strings = {
       EXPENSE: 'Расход',
       TRANSFER: 'Перевод',
       ADJUSTMENT: 'Корректировка',
+      TRADE: 'Сделка',
     },
     /** Deleting reverses the balance, so the dialog says so explicitly. */
     deleteWarning: 'Баланс счёта будет пересчитан. Отменить это действие нельзя.',

@@ -1,5 +1,13 @@
-import type { Account, AccountSummary } from '@/api/types'
+import type { Account, AccountSummary, AccountType } from '@/api/types'
 import { strings } from '@/strings'
+
+/**
+ * Whether an account holds positions. The server accepts a TRADE on exactly
+ * these two types and answers 400 on `accountId` for any other.
+ */
+export function isInvestmentAccount(type: AccountType): boolean {
+  return type === 'BROKER' || type === 'CRYPTO'
+}
 
 /**
  * A transaction references accounts by id only, and `GET /accounts` returns
