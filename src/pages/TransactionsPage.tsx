@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { accountNameLookup } from '@/lib/accounts'
 import { currentMonthInAlmaty, formatDate, todayInAlmaty } from '@/lib/format'
+import { tradeDetails, transactionTitle } from '@/lib/transactions'
 import { strings } from '@/strings'
 
 /** The API caps the window at a year; anything longer is a 400. */
@@ -212,12 +213,12 @@ export function TransactionsPage() {
                       {formatDate(transaction.occurredOn)}
                     </TableCell>
                     <TableCell>
-                      {/* The category is embedded and keeps its name after
-                          deletion, so it is never resolved by id here. */}
-                      <span>
-                        {transaction.category?.name ??
-                          strings.transactions.types[transaction.type]}
-                      </span>
+                      <span>{transactionTitle(transaction)}</span>
+                      {tradeDetails(transaction) !== null && (
+                        <p className="truncate text-xs text-muted-foreground tabular-nums">
+                          {tradeDetails(transaction)}
+                        </p>
+                      )}
                       {/* Embedded like the category, and like it keeps
                           resolving after the topic is soft-deleted. */}
                       {transaction.topic !== null && (

@@ -10,6 +10,7 @@ export const strings = {
     dashboard: 'Обзор',
     accounts: 'Счета',
     transactions: 'Операции',
+    investments: 'Инвестиции',
     budgets: 'Бюджеты',
     goals: 'Цели',
     bills: 'Платежи',
@@ -283,6 +284,57 @@ export const strings = {
       exchangeRateRequired: 'Укажите курс — счёт не в тенге',
       dateFuture: 'Дата не может быть в будущем',
       noteTooLong: 'Не больше 1000 символов',
+    },
+  },
+
+  investments: {
+    title: 'Инвестиции',
+    /**
+     * Every figure on this screen is what was paid. There is no price feed
+     * yet, so nothing may be called «стоимость» in the sense of worth — the
+     * wording is «вложено» throughout, and this line says why.
+     */
+    costHint: 'Все суммы — это цена покупки, а не текущая рыночная цена',
+    ticker: 'Тикер',
+    quantity: 'Количество',
+    unitPrice: 'Цена за единицу',
+    averagePrice: 'Средняя цена покупки',
+    cost: 'Вложено',
+    totalCost: 'Всего вложено',
+    /** Per currency, like account balances — the KZT figure sits beside it. */
+    currencyCost: (currency: string) => `Вложено в ${currency}`,
+    side: 'Вид сделки',
+    /** OPENING is a position entered as already held, not a purchase. */
+    sides: { BUY: 'Покупка', SELL: 'Продажа', OPENING: 'Ввод остатка' },
+    tradeTotal: 'Сумма сделки',
+    /** There is no asset-class field; the owner keeps it in the note. */
+    noteHint: 'Укажите вид актива: акция, ETF, облигация, монета',
+    addTrade: 'Новая сделка',
+    addOpening: 'Добавить имеющийся актив',
+    openingTitle: 'Имеющийся актив',
+    /** The one thing that sets it apart from a purchase: no cash moves. */
+    openingHint: 'Для активов, купленных до начала учёта. Деньги со счёта не списываются.',
+    openingQuantity: 'Количество в наличии',
+    openingDate: 'Дата покупки',
+    openingSaved: 'Актив добавлен',
+    holdings: 'Активы на счёте',
+    empty: 'Активов пока нет',
+    noAccounts: 'Сначала создайте брокерский счёт или криптосчёт',
+    /** Side, type and account are immutable on PATCH. */
+    immutableHint: 'Счёт и вид сделки изменить нельзя — удалите сделку и создайте заново',
+    /** Deleting a trade reverses the cash and recomputes the position. */
+    deleteWarning:
+      'Баланс счёта и количество актива будут пересчитаны. Отменить это действие нельзя.',
+    /** 409 on an edit or delete that would leave a ticker oversold. */
+    oversold:
+      'Тогда продано окажется больше, чем куплено. Сначала исправьте или удалите продажу.',
+    errors: {
+      tickerRequired: 'Укажите тикер',
+      tickerTooLong: 'Не больше 32 символов',
+      quantityInvalid: 'Введите количество числом больше нуля',
+      priceInvalid: 'Введите цену числом больше нуля',
+      tooManyDecimals: 'Не больше 10 знаков после запятой',
+      accountNotInvestment: 'Сделки доступны только на брокерском счёте и криптосчёте',
     },
   },
 

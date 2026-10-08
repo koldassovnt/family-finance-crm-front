@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { accountNameLookup } from '@/lib/accounts'
 import { currentMonthInAlmaty, formatDate, formatMoneyWithCurrency, todayInAlmaty } from '@/lib/format'
+import { tradeDetails, transactionTitle } from '@/lib/transactions'
 import { cn } from '@/lib/utils'
 import { strings } from '@/strings'
 
@@ -163,7 +164,12 @@ export function AccountDetailPage() {
                     {formatDate(transaction.occurredOn)}
                   </TableCell>
                   <TableCell>
-                    {transaction.category?.name ?? strings.transactions.types[transaction.type]}
+                    {transactionTitle(transaction)}
+                    {tradeDetails(transaction) !== null && (
+                      <p className="truncate text-xs text-muted-foreground tabular-nums">
+                        {tradeDetails(transaction)}
+                      </p>
+                    )}
                     {transaction.note !== null && (
                       <p className="truncate text-xs text-muted-foreground">{transaction.note}</p>
                     )}

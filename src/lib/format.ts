@@ -63,6 +63,49 @@ export function formatExchangeRate(value: number): string {
   }).format(value)
 }
 
+const quantityFormatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 10 })
+
+/**
+ * How many units of an instrument — shares or coins. Not money: a crypto
+ * position is routinely 0.00041 of a coin, which the money formatter would
+ * print as «0,00». Up to the 10 decimals the backend stores, with trailing
+ * zeros dropped, so a read's `2.0000000000` is «2».
+ */
+export function formatQuantity(value: number): string {
+  return quantityFormatter.format(value)
+}
+
+const unitPriceFormatter = new Intl.NumberFormat('ru-RU', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 10,
+})
+
+/**
+ * A price per unit exactly as it was entered on a trade. Two decimals at
+ * least, so it reads as a price, but never rounded: a coin bought at 0.000012
+ * is not «0,00», and showing a typed 100.125 as «100,13» would misquote the
+ * trade.
+ */
+export function formatUnitPrice(value: number): string {
+  return unitPriceFormatter.format(value)
+}
+
+const smallAveragePriceFormatter = new Intl.NumberFormat('ru-RU', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 8,
+})
+
+/**
+ * An average price paid, which the server derives rather than echoes — so,
+ * unlike {@link formatUnitPrice}, it is rounded. Dividing a cost held at four
+ * decimals by a tiny quantity gives 61000.4965 for a single purchase typed at
+ * 61000.5; at two decimals that reads «61 000,50» again. Below 1 the extra
+ * decimals are the price itself, so they stay.
+ */
+export function formatAveragePrice(value: number): string {
+  return Math.abs(value) >= 1 ? formatMoney(value) : smallAveragePriceFormatter.format(value)
+}
+
 /**
  * Percentages are not money and never go through the money formatter.
  *
