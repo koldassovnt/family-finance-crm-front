@@ -5,16 +5,11 @@ without a decision.
 
 ### Phase 5 — what is left
 
-Trades and holdings **at cost** are built — see `../phase-5-investments.md`.
-What remains waits for a price source, which the owner has said comes later
-from external APIs:
+Trades, holdings, current value and gain are built — see
+`../phase-5-investments.md`. What remains:
 
-- Current valuation and unrealized gain/loss per holding
 - Allocation breakdown chart (by asset class / instrument). There is no
   asset-class field today — the kind of asset lives in the trade's note.
-
-When prices arrive they are new columns beside «Вложено», not a relabelling of
-it.
 
 ### Phase 6 — Net Worth Dashboard
 

@@ -22,7 +22,8 @@ contract its session handed over. Spec: `.claude/requirements/phase-5-investment
 ## Decisions worth remembering
 
 - **Nothing is called a value.** Every figure is purchase cost, so the column is
-  «Вложено». When prices arrive they are new columns.
+  «Вложено». When prices arrive they are new columns. *(They arrived the next
+  day — see the follow-up below.)*
 - **`OPENING` is a separate button, not a third side.** It moves no cash and is
   how an existing portfolio gets in; beside Buy and Sell it would read as a kind
   of deal.
@@ -57,6 +58,37 @@ those catch different things. Still to drive by hand:
 - an `OPENING` with a past date, confirming the account balance does not move;
 - a shared broker account as a viewer: holdings visible on the account page,
   absent from the viewer's `/investments`.
+
+## Follow-up, 2026-10-09 — prices, ticker format, rename
+
+The backend added market data (its main `559312f`), and this caught up the same
+day.
+
+- **Ticker format** validated in the trade form, the edit dialog and the
+  rename, from one rule in `lib/tickers.ts`; the placeholder shows the example
+  for the selected account.
+- **Current price, value and gain** on both holdings views, with the three KZT
+  totals on `/investments`. This reverses the first round's "nothing is called
+  a value" — cost and market are now separate columns.
+- **«Обновить цены»**, the **rename action**, the **rate suggestion** in the
+  form, and the **API Ninjas credit**.
+
+Decisions worth remembering:
+
+- **Unpriced is a dash, not a zero**, and a partial total says how many
+  holdings it leaves out. A total's gain is the `gain` field, never
+  value − cost: the two cover different holdings.
+- **On edit the ticker is checked only if it changed**, so trades recorded
+  before the format existed can still have their other fields corrected.
+- **The rate suggestion never overwrites a typed rate** — it fills an empty
+  field or replaces the suggestion for the account just left.
+
+Verification is again compiler, bundler and linter only. Added to the list to
+drive by hand: each of the three ticker formats and its error, an unpriced KZT
+holding beside a priced one in the same view, a refresh on a server with and
+without an API key, a rename and the 409 on renaming onto an existing ticker,
+and the rate appearing when a USD account is picked. Note the live instance had
+no rates until its first refresh.
 
 ## Seeded data
 
