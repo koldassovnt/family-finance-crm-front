@@ -76,15 +76,25 @@ otherwise. The format is what lets the server find a price, so it follows where
 the asset is quoted. `lib/tickers.ts` is the one place it lives. Validate after
 trimming and uppercasing, as the server does.
 
-| Account | Format | Example | Regex |
+| Asset | Format | Example | Regex |
 |---|---|---|---|
-| `CRYPTO` | pair quoted in the **account's** currency | `TON/USD` | `^[A-Z0-9]{1,20}/[A-Z]{3}$` |
-| `BROKER`, not KZT | symbol with its exchange | `VEA.US` | `^[A-Z0-9^-]{1,20}\.[A-Z]{1,6}$` |
-| `BROKER`, KZT | the plain ticker | `HSBK` | `^[A-Z0-9]{1,20}$` |
+| a coin | pair quoted in the **account's** currency | `GRAM/USD` | `^[A-Z0-9]{1,20}/[A-Z]{3}$` |
+| a stock, `BROKER` not KZT | symbol with its exchange | `VEA.US` | `^[A-Z0-9^-]{1,20}\.[A-Z]{1,6}$` |
+| a stock, `BROKER` KZT | the plain ticker | `HSBK` | `^[A-Z0-9]{1,20}$` |
 
-- A crypto pair quoted in another currency is its own error, worded apart from
+| Account | Accepts |
+|---|---|
+| `CRYPTO`, any currency | a coin pair only |
+| `BROKER`, not KZT | a coin pair or `SYMBOL.EXCHANGE` |
+| `BROKER`, KZT | a coin pair (quoted in KZT) or the plain ticker |
+
+- **The `/` decides whether a ticker is a coin, not the account type** (backend
+  `3b6d11c`). The owner's coins sit in an account typed `BROKER` that predates
+  the `CRYPTO` type; validating by account type rejected their own data.
+- A coin pair quoted in another currency is its own error, worded apart from
   a malformed one.
-- The input's placeholder is the example for the selected account.
+- The input's placeholder is the example for the selected account — the stock
+  form for a broker account; the error wording is what offers the coin pair.
 - It applies to a new trade, to a `PATCH` of a trade's ticker, and to a rename.
 - **On edit, judge the ticker only when it changed.** A trade recorded before
   the format existed keeps a ticker that would now fail, and the server checks

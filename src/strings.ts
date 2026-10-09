@@ -362,14 +362,18 @@ export const strings = {
       'Тогда продано окажется больше, чем куплено. Сначала исправьте или удалите продажу.',
     errors: {
       tickerRequired: 'Укажите тикер',
-      /** One per account kind; the format is what lets a price be found. */
-      tickerCryptoFormat: (currency: string) =>
-        `Запишите как МОНЕТА/${currency}, например TON/${currency}`,
-      tickerCryptoCurrency: (currency: string) =>
+      /**
+       * The format is what lets a price be found. A coin pair is accepted in
+       * a broker account too, so the stock wordings offer it as the way out.
+       */
+      tickerCoinFormat: (currency: string) =>
+        `Запишите как МОНЕТА/${currency}, например GRAM/${currency}`,
+      tickerCoinCurrency: (currency: string) =>
         `Котировка должна быть в валюте счёта — ${currency}`,
       tickerExchange: (currency: string) =>
-        `Для счёта в ${currency} укажите биржу через точку, например VEA.US`,
-      tickerPlain: 'Для счёта в тенге — только тикер, например HSBK',
+        `Для счёта в ${currency} укажите биржу через точку, например VEA.US, или пару для монеты, например GRAM/${currency}`,
+      tickerPlain:
+        'Для счёта в тенге — только тикер, например HSBK, или пара для монеты, например GRAM/KZT',
       tickerUnchanged: 'Новый тикер совпадает с текущим',
       quantityInvalid: 'Введите количество числом больше нуля',
       priceInvalid: 'Введите цену числом больше нуля',
