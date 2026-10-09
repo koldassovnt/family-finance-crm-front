@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { accountsApi } from '@/api/endpoints'
-import type { Transaction } from '@/api/types'
+import type { Holding, Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { ReconcileDialog } from '@/components/accounts/ReconcileDialog'
 import { HoldingsTable } from '@/components/investments/HoldingsTable'
+import { RenameTickerDialog } from '@/components/investments/RenameTickerDialog'
 import { ShareButton } from '@/components/sharing/ShareButton'
 import { ViewerNotice } from '@/components/sharing/ViewerNotice'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -32,6 +33,7 @@ export function AccountDetailPage() {
   const [from, setFrom] = useState(() => `${currentMonthInAlmaty()}-01`)
   const [to, setTo] = useState(todayInAlmaty)
   const [isReconcileOpen, setIsReconcileOpen] = useState(false)
+  const [renaming, setRenaming] = useState<Holding | null>(null)
 
   const account = useQuery({
     queryKey: ['accounts', id],
@@ -132,17 +134,31 @@ export function AccountDetailPage() {
         <>
           <div className="pt-2">
             <h2 className="text-lg font-medium">{strings.investments.holdings}</h2>
-            <p className="text-xs text-muted-foreground">{strings.investments.costHint}</p>
+            <p className="text-xs text-muted-foreground">{strings.investments.priceHint}</p>
           </div>
           <QueryState query={holdings}>
             {(data) =>
               data.holdings.length === 0 ? (
                 <p className="text-muted-foreground">{strings.investments.empty}</p>
               ) : (
-                <HoldingsTable data={data} showAccount={false} />
+                // Renaming is owner-only — a viewer gets 404 — so the action
+                // is absent for one, like reconcile above.
+                <HoldingsTable
+                  data={data}
+                  showAccount={false}
+                  onRename={isViewer ? undefined : setRenaming}
+                />
               )
             }
           </QueryState>
+          {renaming !== null && (
+            <RenameTickerDialog
+              key={renaming.ticker}
+              holding={renaming}
+              open
+              onOpenChange={(next) => !next && setRenaming(null)}
+            />
+          )}
         </>
       )}
 

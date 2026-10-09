@@ -24,6 +24,15 @@ export function formatMoneyWithCurrency(value: number, currency: string): string
   return `${formatMoney(value)} ${currencySymbol(currency)}`
 }
 
+/**
+ * Money that is a change rather than an amount — a gain or a loss — so a
+ * positive figure carries its «+». A loss already has its minus from the
+ * formatter; zero is left bare, being neither.
+ */
+export function formatSignedMoneyWithCurrency(value: number, currency: string): string {
+  return `${value > 0 ? '+' : ''}${formatMoneyWithCurrency(value, currency)}`
+}
+
 /** The backend stores money as NUMERIC(19,4). */
 const MONEY_SCALE = 10_000
 
