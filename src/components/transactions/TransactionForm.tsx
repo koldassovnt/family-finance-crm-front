@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import {
+  marketDataApi,
   transactionsApi,
   type CreateTradeBody,
   type CreateTransactionBody,
@@ -23,6 +24,8 @@ import { Label } from '@/components/ui/label'
 import { FieldSelect } from '@/components/FieldSelect'
 import { isInvestmentAccount } from '@/lib/accounts'
 import { formatMoneyWithCurrency, parseMoney, todayInAlmaty } from '@/lib/format'
+import { suggestedRate } from '@/lib/rates'
+import { tickerRule } from '@/lib/tickers'
 import { strings } from '@/strings'
 import {
   refineTransaction,
@@ -65,6 +68,10 @@ export function TransactionForm({
   opening = false,
 }: TransactionFormProps) {
   const queryClient = useQueryClient()
+
+  // Stored server-side and refreshed daily, so reading them costs no call to
+  // the price provider. Purely a convenience: the form works without them.
+  const rates = useQuery({ queryKey: ['market-rates'], queryFn: marketDataApi.rates })
 
   const form = useForm<TransactionFormValues, unknown, TransactionFormOutput>({
     resolver: zodResolver(transactionFormSchema.superRefine(refineTransaction(accounts))),
@@ -135,6 +142,15 @@ export function TransactionForm({
   function selectAccount(value: string) {
     form.setValue('accountId', value)
     const next = accounts.find((account) => account.id === value)
+
+    // Offer the latest stored rate for the new account's currency — but only
+    // into a field the user has not made their own: empty, or still holding
+    // the suggestion for the account they are leaving. A typed rate stays.
+    const current = form.getValues('exchangeRate') ?? ''
+    if (current === '' || current === suggestedRate(rates.data, source?.currency)) {
+      form.setValue('exchangeRate', suggestedRate(rates.data, next?.currency))
+    }
+
     const investment = next !== undefined && isInvestmentAccount(next.type)
     if (investment && (type === 'INCOME' || type === 'EXPENSE')) form.setValue('type', 'TRADE')
     if (!investment && type === 'TRADE') form.setValue('type', 'EXPENSE')
@@ -263,12 +279,18 @@ export function TransactionForm({
                 error={form.formState.errors.ticker?.message}
               >
                 {/* Uppercased by the server; shown that way so the saved row
-                    is no surprise. */}
+                    is no surprise. The placeholder is the format this account
+                    expects, which differs by account type and currency. */}
                 <Input
                   autoCapitalize="characters"
                   autoComplete="off"
                   maxLength={32}
                   className="uppercase"
+                  placeholder={
+                    source === undefined
+                      ? undefined
+                      : tickerRule(source.type, source.currency)?.example
+                  }
                   {...form.register('ticker')}
                 />
               </Field>

@@ -291,11 +291,42 @@ export const strings = {
   investments: {
     title: 'Инвестиции',
     /**
-     * Every figure on this screen is what was paid. There is no price feed
-     * yet, so nothing may be called «стоимость» in the sense of worth — the
-     * wording is «вложено» throughout, and this line says why.
+     * Two kinds of figure share this screen and must not blur: «Вложено» is
+     * what was paid and always exists; «Стоимость» and «Прибыль» come from a
+     * market price and exist only where there is one.
      */
-    costHint: 'Все суммы — это цена покупки, а не текущая рыночная цена',
+    priceHint:
+      'Текущая цена — цена закрытия дня. Активы без цены учитываются только по цене покупки.',
+    currentPrice: 'Текущая цена',
+    value: 'Стоимость',
+    gain: 'Прибыль',
+    totalValue: 'Текущая стоимость',
+    /** Shown in place of a price, never 0 — KASE tickers are never priced. */
+    noPrice: 'нет цены',
+    priceAsOf: (date: string) => `на ${date}`,
+    /**
+     * A total's value and gain leave unpriced holdings out while its cost
+     * does not, so the figure is partial and has to say so beside itself.
+     */
+    unpriced: (count: number) => `Без цены: ${count}`,
+    unpricedHint: (count: number) =>
+      `Без текущей цены: ${count}. Стоимость и прибыль посчитаны без них.`,
+    refresh: 'Обновить цены',
+    refreshed: (result: { updated: number; upToDate: number; failed: number; overBudget: number }) =>
+      `Обновлено: ${result.updated} · уже актуальны: ${result.upToDate} · без ответа: ${result.failed} · отложено из-за лимита: ${result.overBudget}`,
+    /** `configured: false` — the server has no price API key. */
+    refreshNotConfigured: 'На сервере не настроен ключ для получения цен',
+    /** Required by the provider's free plan. */
+    attribution: 'Цены предоставлены API Ninjas',
+    rename: 'Переименовать',
+    renameTitle: 'Переименовать тикер',
+    /** Every trade of it in the account, in one step. */
+    renameHint: (ticker: string, account: string) =>
+      `Тикер ${ticker} изменится во всех сделках на счёте «${account}». Цена появится после следующего обновления.`,
+    renameTo: 'Новый тикер',
+    renamed: 'Тикер переименован',
+    /** 409 — a rename cannot merge two tickers. */
+    renameConflict: 'Такой тикер уже есть на этом счёте — объединить два тикера нельзя',
     ticker: 'Тикер',
     quantity: 'Количество',
     unitPrice: 'Цена за единицу',
@@ -331,7 +362,15 @@ export const strings = {
       'Тогда продано окажется больше, чем куплено. Сначала исправьте или удалите продажу.',
     errors: {
       tickerRequired: 'Укажите тикер',
-      tickerTooLong: 'Не больше 32 символов',
+      /** One per account kind; the format is what lets a price be found. */
+      tickerCryptoFormat: (currency: string) =>
+        `Запишите как МОНЕТА/${currency}, например TON/${currency}`,
+      tickerCryptoCurrency: (currency: string) =>
+        `Котировка должна быть в валюте счёта — ${currency}`,
+      tickerExchange: (currency: string) =>
+        `Для счёта в ${currency} укажите биржу через точку, например VEA.US`,
+      tickerPlain: 'Для счёта в тенге — только тикер, например HSBK',
+      tickerUnchanged: 'Новый тикер совпадает с текущим',
       quantityInvalid: 'Введите количество числом больше нуля',
       priceInvalid: 'Введите цену числом больше нуля',
       tooManyDecimals: 'Не больше 10 знаков после запятой',

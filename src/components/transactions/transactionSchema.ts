@@ -2,13 +2,13 @@ import { z } from 'zod'
 import type { Account } from '@/api/types'
 import { isInvestmentAccount } from '@/lib/accounts'
 import { parseMoney, todayInAlmaty } from '@/lib/format'
+import { tickerRule } from '@/lib/tickers'
 import { strings } from '@/strings'
 
 const messages = strings.transactions.errors
 const tradeMessages = strings.investments.errors
 
-/** The server's limits on a trade's ticker, quantity and unit price. */
-const TICKER_MAX_LENGTH = 32
+/** The server's limit on a trade's quantity and unit price. */
 const TRADE_MAX_DECIMALS = 10
 
 export const transactionFormSchema = z.object({
@@ -151,11 +151,16 @@ function refineTrade(
     })
   }
 
+  // The format depends on the account — a pair on a crypto account, a symbol
+  // with its exchange on a foreign-currency broker one — so there is nothing
+  // to check the ticker against until an account is chosen.
   const ticker = (values.ticker ?? '').trim()
+  const formatError =
+    source === undefined ? null : tickerRule(source.type, source.currency)?.validate(ticker)
   if (ticker === '') {
     ctx.addIssue({ code: 'custom', path: ['ticker'], message: tradeMessages.tickerRequired })
-  } else if (ticker.length > TICKER_MAX_LENGTH) {
-    ctx.addIssue({ code: 'custom', path: ['ticker'], message: tradeMessages.tickerTooLong })
+  } else if (formatError != null) {
+    ctx.addIssue({ code: 'custom', path: ['ticker'], message: formatError })
   }
 
   const quantityError = tradeNumberError(values.quantity ?? '', tradeMessages.quantityInvalid)

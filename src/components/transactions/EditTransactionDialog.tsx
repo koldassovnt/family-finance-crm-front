@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { transactionsApi } from '@/api/endpoints'
-import type { Category, Transaction } from '@/api/types'
+import type { AccountSummary, Category, Transaction } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldSelect } from '@/components/FieldSelect'
 import { parseMoney, toPlainDecimal, todayInAlmaty } from '@/lib/format'
+import { tickerRule } from '@/lib/tickers'
 import { strings } from '@/strings'
 
 const NO_CATEGORY = 'none'
@@ -36,11 +37,18 @@ const NO_CATEGORY = 'none'
  */
 export function EditTransactionDialog({
   transaction,
+  account,
   categories,
   open,
   onOpenChange,
 }: {
   transaction: Transaction
+  /**
+   * The transaction's account, when the join finds it — needed only for a
+   * trade, whose ticker format depends on the account's type and currency.
+   * Without it the server's own check still applies.
+   */
+  account?: Pick<AccountSummary, 'type' | 'currency'>
   categories: Category[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -169,6 +177,27 @@ export function EditTransactionDialog({
     return patch
   }
 
+  const rule = account === undefined ? null : tickerRule(account.type, account.currency)
+
+  /**
+   * The ticker is judged only when it was changed. A trade recorded before
+   * the format existed keeps a ticker that would now fail, and the server
+   * checks the field only when it is sent — so correcting such a trade's date
+   * or price must not be blocked by a ticker nobody touched.
+   */
+  function save() {
+    const nextTicker = ticker.trim().toUpperCase()
+    if (isTrade && nextTicker !== transaction.ticker) {
+      const error = rule?.validate(nextTicker)
+      if (error != null) {
+        setFieldErrors({ ticker: error })
+        return
+      }
+    }
+    setFieldErrors({})
+    mutation.mutate()
+  }
+
   const selectableCategories = categories.filter(
     (category) => category.kind === (transaction.type === 'INCOME' ? 'INCOME' : 'EXPENSE'),
   )
@@ -192,6 +221,7 @@ export function EditTransactionDialog({
                   autoComplete="off"
                   maxLength={32}
                   className="uppercase"
+                  placeholder={rule?.example}
                   value={ticker}
                   onChange={(event) => setTicker(event.target.value)}
                 />
@@ -291,7 +321,7 @@ export function EditTransactionDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {strings.common.cancel}
           </Button>
-          <Button type="button" disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button type="button" disabled={mutation.isPending} onClick={save}>
             {strings.common.save}
           </Button>
         </DialogFooter>

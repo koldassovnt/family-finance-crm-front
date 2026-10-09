@@ -96,6 +96,7 @@ export function TransactionsPage() {
         <EditTransactionDialog
           key={editing.id}
           transaction={editing}
+          account={lookup.get(editing.accountId)}
           categories={categories.data ?? []}
           open
           onOpenChange={(next) => !next && setEditing(null)}
