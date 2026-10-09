@@ -180,12 +180,31 @@ export interface Transaction {
 }
 
 /**
+ * What a priced holding or total adds to its cost figures. **All nullable**:
+ * a holding without a market price has none of them, and that is a normal
+ * state rather than an error — the price provider does not cover KASE, so
+ * everything in a KZT broker account stays cost-only. Render "no price",
+ * never 0.
+ */
+export interface MarketFigures {
+  /** quantity × price, in the holding's currency. */
+  value: number | null
+  /** At the latest KZT rate; null on its own when only that rate is missing. */
+  valueKzt: number | null
+  /** value − cost; negative is a loss. */
+  gain: number | null
+  /** Reflects the exchange rate moving as well as the price. */
+  gainKzt: number | null
+}
+
+/**
  * One ticker in one account — the same ticker in two accounts is two rows.
  *
- * Every figure is what the units **cost**, not what they are worth: there is
- * no price feed yet. Don't label any of it a value.
+ * The cost fields say what the units still held were bought for and are
+ * always present; the {@link MarketFigures} say what they are worth now and
+ * may all be null.
  */
-export interface Holding {
+export interface Holding extends MarketFigures {
   ticker: string
   accountId: string
   accountName: string
@@ -202,21 +221,67 @@ export interface Holding {
   /** What the units still held cost. */
   cost: number
   costKzt: number
+  /** Latest market price of one unit, in the holding's currency. */
+  price: number | null
+  /**
+   * ISO instant the price was fetched. It is a daily closing price, so it can
+   * be a day or more old — show it.
+   */
+  priceAsOf: string | null
+  /** Where the stock trades, as the price API names it. Null for coins. */
+  exchange: string | null
 }
 
-export interface HoldingCurrencyTotal {
+/**
+ * A group's totals, which cover **two different sets of holdings**: `cost`
+ * and `costKzt` every holding in the group, the {@link MarketFigures} only
+ * the priced ones. So a total's gain is never `value − cost` — use `gain` —
+ * and when `unpriced` is above zero the value is partial and must say so.
+ * A market figure is null only when nothing in the group is priced.
+ */
+export interface HoldingCurrencyTotal extends MarketFigures {
   currency: string
   cost: number
   costKzt: number
+  /** How many holdings the market figures leave out. */
+  unpriced: number
 }
 
-/** `GET /investments` and `GET /accounts/{id}/holdings` share this shape. */
+/**
+ * `GET /investments`, `GET /accounts/{id}/holdings` and the rename endpoint
+ * share this shape.
+ */
 export interface Holdings {
   /** Sorted by ticker, then account name. Positions sold to zero are absent. */
   holdings: Holding[]
   /** Sorted by currency. */
   totalsByCurrency: HoldingCurrencyTotal[]
   totalCostKzt: number
+  /** Priced holdings only, like a group's — see {@link HoldingCurrencyTotal}. */
+  totalValueKzt: number | null
+  totalGainKzt: number | null
+  unpriced: number
+}
+
+/** KZT per one unit of `currency`, fetched daily. */
+export interface MarketRate {
+  currency: string
+  /** Scale 10 on reads. Not money — it goes through the rate formatter. */
+  rateKzt: number
+  fetchedAt: string
+}
+
+/** What a price refresh did, counted in symbols. */
+export interface MarketRefreshResult {
+  /** False when the server has no price API key, and nothing was asked. */
+  configured: boolean
+  updated: number
+  /** Already fetched today, so not asked again. */
+  upToDate: number
+  /** The API had no answer; the old price is kept. */
+  failed: number
+  /** Skipped because the daily call cap is reached. */
+  overBudget: number
 }
 
 export type TopicStatus = 'ACTIVE' | 'CLOSED'

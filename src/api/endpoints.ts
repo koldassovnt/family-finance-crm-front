@@ -11,6 +11,8 @@ import type {
   Goal,
   Holdings,
   LoginResponse,
+  MarketRate,
+  MarketRefreshResult,
   MonthlySummary,
   Topic,
   TopicDetail,
@@ -79,11 +81,35 @@ export const accountsApi = {
    * `GET /investments`. Empty lists for an account with no trades.
    */
   holdings: (id: string) => request<Holdings>(`${V1}/accounts/${id}/holdings`),
+  /**
+   * Rewrites a ticker on every trade of it in this account, for an asset that
+   * changed its name. Owner only — a viewer gets 404. Returns the account's
+   * holdings after the rename; the renamed one has no price until the next
+   * refresh.
+   *
+   * `to` must satisfy the account's ticker format. 400 on `from` when it is
+   * not traded here; 409 when `to` already is, since a rename cannot merge.
+   */
+  renameHolding: (id: string, body: { from: string; to: string }) =>
+    request<Holdings>(`${V1}/accounts/${id}/holdings/rename`, { method: 'POST', body }),
 }
 
 export const investmentsApi = {
   /** Everything held across the caller's own accounts — never shared ones. */
   holdings: () => request<Holdings>(`${V1}/investments`),
+}
+
+export const marketDataApi = {
+  /**
+   * One row per non-KZT currency any account is in. Empty until the first
+   * refresh. Reads the server's stored rates, so it costs no API call.
+   */
+  rates: () => request<MarketRate[]>(`${V1}/market-data/rates`),
+  /**
+   * Fetches today's prices and rates. Safe to repeat: what was already fetched
+   * today is not asked again. The server also runs it daily at 08:00 Almaty.
+   */
+  refresh: () => request<MarketRefreshResult>(`${V1}/market-data/refresh`, { method: 'POST' }),
 }
 
 export const banksApi = {
@@ -175,7 +201,10 @@ export interface CreateTradeBody {
   /** Must be a BROKER or CRYPTO account. */
   accountId: string
   tradeSide: TradeSide
-  /** Trimmed and uppercased by the server; 32 characters at most. */
+  /**
+   * Trimmed and uppercased by the server, and held to a format that depends
+   * on the account — see `lib/tickers.ts`.
+   */
   ticker: string
   /** > 0, at most 10 decimal places. */
   quantity: number
