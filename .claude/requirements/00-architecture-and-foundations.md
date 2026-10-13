@@ -211,6 +211,30 @@ detail page.
 The date-range pickers are mandatory: an unbounded "all transactions" view is
 not something the API can serve.
 
+### Export to Excel
+
+**Decided and built:** «Скачать в Excel» on `/transactions` calls
+`GET /api/v1/reports/transactions.xlsx` (backend 1.1.0) with **the page's
+current range and filters**. The endpoint takes exactly the list's parameters
+and returns the same rows in the same order, so the file is what is on screen.
+The list and the export read one filter object for that reason — don't build
+the two sets of parameters separately.
+
+- It is a **fetch, not a link**: the endpoint needs the bearer token, so an
+  `<a href>` or `window.open` gets a 401. `requestFile()` in `api/client.ts`
+  fetches the blob with the usual auth and 401 handling, and `saveBlob()` in
+  `lib/download.ts` hands it to the browser.
+- The file name comes from `Content-Disposition`
+  (`transactions_<from>_<to>.xlsx`), which the backend exposes over CORS; the
+  page builds the same name as a fallback.
+- Failures are the usual JSON `ErrorResponse` even on this endpoint — 400 for a
+  bad range, 404 for a filter id that isn't the caller's — and show as a toast
+  with `message`.
+- The button is disabled while the range is invalid and while the list is
+  empty or still loading: there is nothing on screen to export.
+- Own transactions only, like the list. The sheet is one row per transaction;
+  amounts are positive as in the API and a Type column gives the direction.
+
 ## API Integration Conventions
 
 - Loading, error, and empty states as a consistent pattern across every page

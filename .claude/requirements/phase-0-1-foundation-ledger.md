@@ -84,10 +84,11 @@ stack, formatting rules, auth and error contract this builds on.
       single call and it is exactly the "this month at a glance" the dashboard
       is specified as. Give the dashboard a month selector so past months are
       reachable — the same control `/budgets` needs, which makes the two read
-      as one system. A separate reports page only earns its place with Phase
-      6's XLSX export, which is out of scope; if a drill-down is wanted before
-      then, mount the same component at a route rather than building a second
-      view.
+      as one system. There is still no reports page: the XLSX export that was
+      going to justify one is a button on `/transactions` instead, since it
+      exports that page's rows (see "Export to Excel" in
+      `00-architecture-and-foundations.md`). If a drill-down is wanted, mount
+      the same component at a route rather than building a second view.
 - Categories arrive as a **flat list with `parentId`** (`GET /api/v1/categories`,
   `kind` is `EXPENSE` or `INCOME`) — build the tree client-side; there is no
   nested endpoint.

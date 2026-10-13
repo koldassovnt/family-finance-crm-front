@@ -18,12 +18,17 @@ Accounts, transactions, reconcile and the monthly summary.
   required date range, and the reconcile action.
 - **Transaction edit and delete**, including the cross-currency transfer case
   where both amounts travel together.
+- **Export to Excel** on `/transactions` — «Скачать в Excel» downloads
+  `GET /reports/transactions.xlsx` for the range and filters on screen.
 
 ## Decisions worth remembering
 
 - **The summary lives on the dashboard.** It is one call and it is exactly the
-  "this month at a glance" the dashboard is specified as. A separate reports
-  page only earns its place with Phase 6's export, which is out of scope.
+  "this month at a glance" the dashboard is specified as. The export did not
+  bring a reports page with it: it exports the transaction list's rows, so it
+  is a button on that page.
+- **The export is fetched, not linked.** The endpoint needs the bearer token,
+  which a plain link does not send.
 - **Balances are never summed across currencies.** Converting one would need a
   current rate, which the backend deliberately doesn't store.
 - **Spending by category is a sorted horizontal bar, not a donut** — the job is
@@ -50,5 +55,8 @@ Accounts, transactions, reconcile and the monthly summary.
 
 ## Open
 
+- The export button has **not been clicked in a browser**. It type-checks and
+  builds, and the endpoint answers 401 without a token as described; the
+  download itself, the file name and the error toast are unverified.
 - The add/edit **account** form, including the pick-or-create bank combobox.
   This is the last piece of the phase.
