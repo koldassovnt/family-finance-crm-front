@@ -16,6 +16,7 @@ export const strings = {
     bills: 'Платежи',
     categories: 'Категории',
     topics: 'События',
+    purchases: 'Покупки',
     shared: 'Общий доступ',
     password: 'Смена пароля',
     users: 'Пользователи',
@@ -540,5 +541,33 @@ export const strings = {
     nothingUnpaid: 'Всё оплачено',
     nothingUnpaidThisMonth: 'В этом месяце платить нечего',
     weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+  },
+
+  purchases: {
+    title: 'Покупки',
+    /** It looks like it might feed the ledger; it does not. */
+    hint: 'Список того, что нужно купить. В операции и расходы отсюда ничего не попадает.',
+    mine: 'Мои',
+    family: 'Семейные',
+    /** The one access rule, said where it applies. */
+    familyHint: 'Видны всей семье: каждый может отметить или удалить',
+    name: 'Что купить',
+    namePlaceholder: 'Например, диван',
+    list: 'Список',
+    listMine: 'Мой',
+    listFamily: 'Семейный',
+    none: 'Список пуст — добавьте первую покупку',
+    noneMine: 'Личных покупок нет',
+    noneFamily: 'Семейных покупок нет',
+    remove: (name: string) => `Удалить «${name}»`,
+    /** Only family items confirm: the delete reaches everyone's list. */
+    deleteFamilyTitle: 'Удалить семейную покупку?',
+    deleteFamilyWarning: 'Она исчезнет из списка у всей семьи.',
+    deleted: 'Покупка удалена',
+    /** A 404 on a family item: another member deleted it first. */
+    gone: 'Этой покупки уже нет в списке',
+    errors: {
+      nameRequired: 'Введите название',
+    },
   },
 } as const

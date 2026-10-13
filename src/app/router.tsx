@@ -11,6 +11,7 @@ import { GoalsPage } from '@/pages/GoalsPage'
 import { InvestmentsPage } from '@/pages/InvestmentsPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PasswordPage } from '@/pages/PasswordPage'
+import { PurchasesPage } from '@/pages/PurchasesPage'
 import { SharedPage } from '@/pages/SharedPage'
 import { TopicDetailPage } from '@/pages/TopicDetailPage'
 import { TopicsPage } from '@/pages/TopicsPage'
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
           { path: '/bills', element: <BillsPage /> },
           { path: '/topics', element: <TopicsPage /> },
           { path: '/topics/:id', element: <TopicDetailPage /> },
+          { path: '/purchases', element: <PurchasesPage /> },
           { path: '/shared', element: <SharedPage /> },
           { path: '/settings/categories', element: <CategoriesPage /> },
           { path: '/settings/password', element: <PasswordPage /> },

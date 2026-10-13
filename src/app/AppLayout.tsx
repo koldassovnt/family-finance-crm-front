@@ -13,6 +13,7 @@ const navItems = [
   { to: '/goals', label: strings.nav.goals },
   { to: '/bills', label: strings.nav.bills },
   { to: '/topics', label: strings.nav.topics },
+  { to: '/purchases', label: strings.nav.purchases },
   { to: '/shared', label: strings.nav.shared },
   { to: '/settings/categories', label: strings.nav.categories },
 ]
