@@ -1,6 +1,7 @@
 # Phase 5 — Investments
 
-**Status: built, not yet driven against the backend.** The backend half went
+**Status: done.** Driven by hand in a browser by the owner on 2026-10-13 — see
+"Driven by hand" at the end. The backend half went
 live on 2026-10-08 (its main `3d4da41`); this was written the same day from the
 contract its session handed over. Spec: `.claude/requirements/phase-5-investments.md`.
 
@@ -89,6 +90,17 @@ holding beside a priced one in the same view, a refresh on a server with and
 without an API key, a rename and the 409 on renaming onto an existing ticker,
 and the rate appearing when a USD account is picked. Note the live instance had
 no rates until its first refresh.
+
+## Driven by hand, 2026-10-13
+
+The owner went through both lists above in a browser against the live backend,
+on the deployed 1.0.0, and reported that everything works. That is the owner's
+report, not a check the agent ran or observed: no individual case was recorded,
+and nothing was found that needed fixing.
+
+The allocation chart is the one piece of the phase not built. It stays parked
+(`.claude/requirements/later/phases-5-6-parked.md`) — there is no asset-class
+field to group by.
 
 ## Seeded data
 
