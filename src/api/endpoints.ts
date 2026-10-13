@@ -1,4 +1,4 @@
-import { request } from './client'
+import { request, requestFile } from './client'
 import type {
   Account,
   Share,
@@ -267,6 +267,22 @@ export const transactionsApi = {
   /** Always KZT; TRANSFER, ADJUSTMENT and TRADE excluded. */
   summary: (month: string) =>
     request<MonthlySummary>(`${V1}/transactions/summary`, { query: { month } }),
+}
+
+export const reportsApi = {
+  /**
+   * The cross-account list as an Excel file. Takes exactly the parameters of
+   * `transactionsApi.list` and returns the same rows in the same order, so
+   * passing the page's current filters exports what is on screen. Own
+   * transactions only, like the list.
+   */
+  transactionsXlsx: (params: {
+    from: string
+    to: string
+    accountId?: string
+    categoryId?: string
+    topicId?: string
+  }) => requestFile(`${V1}/reports/transactions.xlsx`, params),
 }
 
 export const budgetsApi = {

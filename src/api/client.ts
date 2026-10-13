@@ -88,7 +88,12 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
   return url.toString()
 }
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+/**
+ * The part every call shares: the bearer token, the 401 rule and the error
+ * shape. Resolves only with an ok response, so the callers differ just in how
+ * they read the body.
+ */
+async function send(path: string, options: RequestOptions): Promise<Response> {
   const { method = 'GET', body, query, skipAuthRedirect = path === LOGIN_PATH } = options
   const token = tokenStorage.get()
 
@@ -110,9 +115,41 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new ApiError(response.status, await readErrorBody(response))
   }
 
+  return response
+}
+
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const response = await send(path, options)
+
   // 204 on password change and every DELETE.
   if (response.status === 204) return undefined as T
   return (await response.json()) as T
+}
+
+export interface DownloadedFile {
+  blob: Blob
+  /** From `Content-Disposition`; null when the header is missing or unreadable. */
+  filename: string | null
+}
+
+/**
+ * A GET whose success body is a file rather than JSON. It has to be a fetch:
+ * the endpoint needs the bearer token, so an `<a href>` or `window.open` would
+ * arrive without it and get a 401. A failure is still the usual JSON error.
+ */
+export async function requestFile(
+  path: string,
+  query?: RequestOptions['query'],
+): Promise<DownloadedFile> {
+  const response = await send(path, { query })
+  return {
+    blob: await response.blob(),
+    filename: filenameFromDisposition(response.headers.get('Content-Disposition')),
+  }
+}
+
+function filenameFromDisposition(header: string | null): string | null {
+  return header?.match(/filename="([^"]+)"/)?.[1] ?? null
 }
 
 async function readErrorBody(response: Response): Promise<ApiErrorBody> {
