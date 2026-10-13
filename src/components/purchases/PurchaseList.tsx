@@ -35,10 +35,7 @@ export function PurchaseList({
 }) {
   return (
     <div className="space-y-2">
-      <div>
-        <h2 className="text-lg font-medium">{title}</h2>
-        {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
-      </div>
+      <h2 className="text-lg font-medium">{title}</h2>
 
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{empty}</p>
@@ -82,6 +79,11 @@ export function PurchaseList({
           ))}
         </ul>
       )}
+
+      {/* Below the list, not under the heading: only one of the two lists has
+          a hint, and a line above would start that list lower than the one
+          beside it. */}
+      {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
 }
