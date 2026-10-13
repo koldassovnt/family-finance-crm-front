@@ -16,6 +16,7 @@ How the app is built and run on the home server, and what has been deployed.
 | Version | Date | What it brought |
 |---|---|---|
 | 1.0.0 | 2026-10-13 | First versioned image. The Excel export on `/transactions`. |
+| 1.1.0 | 2026-10-13 | The «Покупки» page (phase 9, planned purchases). |
 
 Add a row per deploy. The version in `VERSION` is raised **before** the deploy,
 never reused.
@@ -53,8 +54,8 @@ On 2026-10-13, on the server:
 
 ## Open
 
-- **A rollback has not been tried.** There is only one versioned image so far;
-  the steps in the spec are untested until a second one exists.
+- **A rollback has not been tried**, though 1.0.0 is now on the server to roll back to;
+  the steps in the spec are still untested.
 - The old `family-finance-crm-front-web:latest` image is still on the server,
   unused.
 - Image pruning, as above.

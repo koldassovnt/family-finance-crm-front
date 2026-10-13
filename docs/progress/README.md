@@ -18,8 +18,8 @@ truth about the code.
 | [Phase 7](phase-7-topics.md) | Topics («События») — a lens over the ledger | **Done** |
 | [Settings](settings.md) | Category tree, password, user creation | **Done** |
 | [Phase 8](phase-8-sharing.md) | Per-resource read-only sharing between members | **Done** |
-| [Phase 9](phase-9-planned-purchases.md) | Planned purchases («Покупки») — a personal and a family shopping list | **Built, not yet used in a browser, not deployed** |
-| [Deployment](deployment.md) | The image, its version tag, what has been deployed | **1.0.0 running** since 2026-10-13 |
+| [Phase 9](phase-9-planned-purchases.md) | Planned purchases («Покупки») — a personal and a family shopping list | **Built and live in 1.1.0; not yet used in a browser** |
+| [Deployment](deployment.md) | The image, its version tag, what has been deployed | **1.1.0 running** since 2026-10-13 |
 
 Phase 6's net worth dashboard is out of scope; its transaction export is built
 and is logged under Phase 0 + 1, since it lives on the transactions page.

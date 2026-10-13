@@ -1,6 +1,6 @@
 # Phase 9 — Planned purchases
 
-**Status: built, not yet used in a browser, not deployed.** Written on
+**Status: built and live in 1.1.0 (2026-10-13), not yet used in a browser.** Written on
 2026-10-13 from the contract the backend session sent the same day (backend
 1.3.0). Spec: `.claude/requirements/phase-9-planned-purchases.md`.
 
