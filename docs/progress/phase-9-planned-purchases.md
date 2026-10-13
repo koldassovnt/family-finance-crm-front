@@ -63,4 +63,4 @@ The owner then asked for the hint beside the «Семейные» heading instea
 is 1.1.2. It shares the heading's line, so it still cannot push the list down —
 provided it fits. The lists therefore sit side by side only from `lg`; between
 `md` and `lg` the hint would wrap and bring the misalignment back. The owner
-has not yet looked at 1.1.2.
+then saw 1.1.2 and approved it.
