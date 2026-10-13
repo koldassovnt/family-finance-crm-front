@@ -1,7 +1,7 @@
 # Parked — Phase 6, and the rest of Phase 5
 
-**Out of current scope.** Nothing here is built, and nothing should be started
-without a decision.
+**Out of current scope.** Nothing listed as remaining here is built, and none
+of it should be started without a decision.
 
 ### Phase 5 — what is left
 

@@ -9,7 +9,7 @@ rather than repeating it.
 
 | Doc | Scope | Frontend state |
 |---|---|---|
-| [00 — Architecture & foundations](00-architecture-and-foundations.md) | Stack, formatting, auth, errors, routes, API conventions | Built |
+| [00 — Architecture & foundations](00-architecture-and-foundations.md) | Stack, formatting, auth, errors, routes, API conventions, the versioned image, the Excel export | Built |
 | [Phase 0 + 1 — Foundation & ledger](phase-0-1-foundation-ledger.md) | Accounts, transactions, reconcile, monthly summary | Built |
 | [Phase 2 — Budgets & goals](phase-2-budgets-goals.md) | Budgets, goals | Built |
 | [Phase 4 — Bills & due-date calendar](phase-4-bills-calendar.md) | Bills, calendar, batch create | Built |
@@ -17,7 +17,7 @@ rather than repeating it.
 | [Phase 7 — Topics («События»)](phase-7-topics.md) | A lens over the ledger | Built |
 | [Settings](settings.md) | Category tree, password, user creation | Built |
 | [Phase 8 — Sharing](phase-8-sharing.md) | Per-resource read-only sharing between members | Built |
-| [Parked — phase 6, and the rest of 5](later/phases-5-6-parked.md) | Net worth; allocation chart | Out of scope |
+| [Parked — phase 6, and the rest of 5](later/phases-5-6-parked.md) | Net worth; allocation chart. Phase 6's transaction export is built — see 00 | Out of scope |
 
 Phase 3 was dropped before any work started — loans and mortgages are ordinary
 expense categories. Phase 7 reuses a number from a dropped phase of the same

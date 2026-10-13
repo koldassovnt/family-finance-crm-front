@@ -55,8 +55,10 @@ Accounts, transactions, reconcile and the monthly summary.
 
 ## Open
 
-- The export button has **not been clicked in a browser**. It type-checks and
-  builds, and the endpoint answers 401 without a token as described; the
-  download itself, the file name and the error toast are unverified.
+- The export button is live in 1.0.0 (2026-10-13) but has **not been clicked
+  in a browser**. It type-checks and builds, the deployed bundle contains the
+  call, and the endpoint answers 401 without a token through the nginx proxy.
+  Still to drive by hand: the download itself, the file name, a filtered
+  export matching the rows on screen, and the error toast.
 - The add/edit **account** form, including the pick-or-create bank combobox.
   This is the last piece of the phase.
