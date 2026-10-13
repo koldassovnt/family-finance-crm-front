@@ -258,6 +258,8 @@ export const strings = {
     noneInRange: 'За выбранный период операций нет',
     addTitle: 'Новая операция',
     add: 'Добавить операцию',
+    /** Exports the rows on screen — the same range and filters. */
+    exportXlsx: 'Скачать в Excel',
     type: 'Тип',
     fromAccount: 'Счёт списания',
     toAccount: 'Счёт зачисления',

@@ -1,6 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { accountsApi, categoriesApi, topicsApi, transactionsApi } from '@/api/endpoints'
+import { toast } from 'sonner'
+import { ApiError } from '@/api/client'
+import {
+  accountsApi,
+  categoriesApi,
+  reportsApi,
+  topicsApi,
+  transactionsApi,
+} from '@/api/endpoints'
 import type { Transaction } from '@/api/types'
 import { QueryState } from '@/components/QueryState'
 import { TransactionAmount } from '@/components/transactions/TransactionAmount'
@@ -21,6 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { accountNameLookup } from '@/lib/accounts'
+import { saveBlob } from '@/lib/download'
 import { currentMonthInAlmaty, formatDate, todayInAlmaty } from '@/lib/format'
 import { tradeDetails, transactionTitle } from '@/lib/transactions'
 import { strings } from '@/strings'
@@ -60,18 +69,33 @@ export function TransactionsPage() {
     queryFn: () => topicsApi.list(),
   })
 
+  // One object for the list and the export, so the file cannot be filtered
+  // differently from the table above it.
+  const filters = {
+    from,
+    to,
+    accountId: accountId === ALL ? undefined : accountId,
+    categoryId: categoryId === ALL ? undefined : categoryId,
+    topicId: topicId === ALL ? undefined : topicId,
+  }
+
   const transactions = useQuery({
     queryKey: ['transactions', { from, to, accountId, categoryId, topicId }],
-    queryFn: () =>
-      transactionsApi.list({
-        from,
-        to,
-        accountId: accountId === ALL ? undefined : accountId,
-        categoryId: categoryId === ALL ? undefined : categoryId,
-        topicId: topicId === ALL ? undefined : topicId,
-      }),
+    queryFn: () => transactionsApi.list(filters),
     // Don't spend a request on a range the API will reject.
     enabled: invalidRange === null,
+  })
+
+  const exportXlsx = useMutation({
+    mutationFn: () => reportsApi.transactionsXlsx(filters),
+    onSuccess: ({ blob, filename }) => {
+      // The server names the file; the fallback is the same name, for a proxy
+      // that drops the header.
+      saveBlob(blob, filename ?? `transactions_${from}_${to}.xlsx`)
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : strings.common.error)
+    },
   })
 
   const lookup = accountNameLookup(accounts.data)
@@ -80,7 +104,20 @@ export function TransactionsPage() {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">{strings.transactions.title}</h1>
-        <Button onClick={() => setIsFormOpen(true)}>{strings.transactions.add}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Off until there are rows on screen: the file is those rows, and
+              an invalid range would only come back as a 400. */}
+          <Button
+            variant="outline"
+            disabled={
+              invalidRange !== null || !transactions.data?.length || exportXlsx.isPending
+            }
+            onClick={() => exportXlsx.mutate()}
+          >
+            {strings.transactions.exportXlsx}
+          </Button>
+          <Button onClick={() => setIsFormOpen(true)}>{strings.transactions.add}</Button>
+        </div>
       </div>
 
       <TransactionForm
