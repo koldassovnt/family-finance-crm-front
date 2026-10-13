@@ -17,6 +17,7 @@ How the app is built and run on the home server, and what has been deployed.
 |---|---|---|
 | 1.0.0 | 2026-10-13 | First versioned image. The Excel export on `/transactions`. |
 | 1.1.0 | 2026-10-13 | The «Покупки» page (phase 9, planned purchases). |
+| 1.1.1 | 2026-10-13 | The two lists on «Покупки» start at the same height. |
 
 Add a row per deploy. The version in `VERSION` is raised **before** the deploy,
 never reused.

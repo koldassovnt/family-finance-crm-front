@@ -55,10 +55,11 @@ Accounts, transactions, reconcile and the monthly summary.
 
 ## Open
 
-- The export button is live in 1.0.0 (2026-10-13) but has **not been clicked
-  in a browser**. It type-checks and builds, the deployed bundle contains the
-  call, and the endpoint answers 401 without a token through the nginx proxy.
-  Still to drive by hand: the download itself, the file name, a filtered
-  export matching the rows on screen, and the error toast.
+- The export button, live since 1.0.0, was clicked in a browser by the owner
+  on 2026-10-13, who reported that it works. That is the owner's report; the
+  agent only ever checked that it builds, that the deployed bundle contains
+  the call, and that the endpoint answers 401 without a token through the
+  proxy. Not recorded as tried: a filtered export against the rows on screen,
+  and the error toast.
 - The add/edit **account** form, including the pick-or-create bank combobox.
   This is the last piece of the phase.

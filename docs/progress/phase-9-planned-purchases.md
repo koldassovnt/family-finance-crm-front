@@ -1,6 +1,7 @@
 # Phase 9 — Planned purchases
 
-**Status: built and live in 1.1.0 (2026-10-13), not yet used in a browser.** Written on
+**Status: done.** Live since 1.1.0 and used in a browser by the owner on 2026-10-13 — see
+"Used by the owner" at the end. Written on
 2026-10-13 from the contract the backend session sent the same day (backend
 1.3.0). Spec: `.claude/requirements/phase-9-planned-purchases.md`.
 
@@ -46,3 +47,14 @@ two users:
   without reloading — expect «Этой покупки уже нет в списке»;
 - submit a blank name;
 - the layout at phone width, and the add button lining up with the inputs.
+
+## Used by the owner, 2026-10-13
+
+The owner tried the page in a browser on the deployed 1.1.0 and reported that
+it works. That is the owner's report: which of the cases above were covered,
+and whether with one user or two, was not recorded.
+
+One defect came out of it, the kind only rendering shows: the family list had
+its hint under the heading and the personal list has no hint, so the family
+list started a line lower than the one beside it. The hint moved below the
+list; released as 1.1.1. The owner has not yet looked at the fix.
