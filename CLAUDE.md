@@ -29,10 +29,19 @@ npm run lint     # oxlint
 so no dev proxy is needed.
 
 **Deploy** (the prod server is the Windows PC the backend runs on):
-`docker compose up -d --build` builds the image and serves it on port 80 as
-`family-finance-web`. nginx proxies `/api/` to `family-finance-app:8080` on
-the external network `family-finance-crm_default`, so start the backend stack
-first. The image builds with `VITE_API_BASE_URL=/`, so it calls its own origin.
+raise the number in `VERSION`, then `./deploy.ps1`. It copies the version into
+`.env` and runs `docker compose up -d --build`, which builds
+`family-finance-web:<version>` and serves it on port 80 as `family-finance-web`.
+Never `latest`, and every deploy gets a new version — rebuilding one that ran
+overwrites the image a rollback would use. nginx proxies `/api/` to
+`family-finance-app:8080` on the external network `family-finance-crm_default`,
+so start the backend stack first. The image builds with `VITE_API_BASE_URL=/`,
+so it calls its own origin.
+
+That server has no Node. To run `npm run build` and `npm run lint` there, use
+the Dockerfile's build stage:
+`docker build --target build --build-arg VERSION=<version> -t ffc-check:tmp .`,
+then `docker run --rm ffc-check:tmp npm run lint`.
 
 ## Layout
 

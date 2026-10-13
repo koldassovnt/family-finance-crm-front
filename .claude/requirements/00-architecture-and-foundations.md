@@ -110,6 +110,27 @@ All confirmed, not placeholders.
   on port 80 and proxies `/api/` to the backend container
   (`family-finance-app:8080`, joined via the backend's compose network). It
   builds with `VITE_API_BASE_URL=/`. Home LAN only: no TLS, no domain.
+- **Versioned image** (built 2026-10-13, the backend's rule applied here). The
+  image is `family-finance-web:<version>`, never `latest`, so the running
+  version is visible in `docker compose ps` and a bad upgrade can be rolled
+  back.
+    - `<version>` is the content of the `VERSION` file at the repo root, a
+      plain `MAJOR.MINOR.PATCH` from `1.0.0`. It is this repo's own number and
+      does not track the backend's.
+    - **How it reaches compose:** `./deploy.ps1` writes `VERSION=<version>`
+      into `.env`, the only file compose interpolates from, then runs
+      `docker compose up -d --build`. It is a script rather than an npm task
+      because the server has no Node. `./deploy.ps1 <command>` runs any other
+      compose command after the same stamp.
+    - The `Dockerfile` refuses to build unless the tag it was given equals the
+      `VERSION` file in the source, so a stale `.env` cannot put new code
+      under an old tag.
+    - **Every deploy bumps the version.** Rebuilding an existing one
+      overwrites that tag, and with it the rollback target.
+    - **Rolling back:** set `VERSION` in `.env` to the older tag and run
+      `docker compose up -d` **without** `--build` and without the script,
+      which would stamp the current version back. Old images are not pruned
+      automatically.
 - One central API client wrapping requests: attaches the auth header,
   handles errors consistently, and is the only place that knows the base URL
   and auth scheme.

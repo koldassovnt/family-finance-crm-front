@@ -1,9 +1,16 @@
-# `docker compose up -d --build` builds the SPA and serves it on port 80.
+# `./deploy.ps1` builds the SPA and serves it on port 80.
 # The backend runs from its own repo's compose project; this joins that
 # project's network to reach it as family-finance-app.
 services:
   web:
-    build: .
+    # VERSION is the content of the VERSION file; `./deploy.ps1` copies it
+    # into .env, the only file compose interpolates from. Never `latest`: the
+    # tag is what shows which version is running and what a rollback targets.
+    image: family-finance-web:${VERSION:?run ./deploy.ps1, which writes VERSION to .env}
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION:?run ./deploy.ps1, which writes VERSION to .env}
     container_name: family-finance-web
     ports:
       - "${WEB_PORT:-80}:80"
