@@ -29,8 +29,12 @@ bought or not.
 
 In the nav after «События», open to every role.
 
-- **Two lists side by side**, «Мои» and «Семейные», split client-side on
-  `isFamily` from the one `GET`. Stacked on a phone.
+- **Two lists side by side from `lg`**, «Мои» and «Семейные», split client-side on
+  `isFamily` from the one `GET`. Stacked below that.
+- **The family hint sits on the heading's line**, never on a line of its own:
+  only one list has a hint, and its own line would start that list lower than
+  the other. That is also why the lists pair up only from `lg` — narrower, the
+  hint wraps.
 - **One add form above them:** the name and a select for which list, **«Мой»
   by default** — the private choice, so a forgotten selection hides an item
   rather than publishing it. The name is required; a blank one is caught

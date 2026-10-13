@@ -57,4 +57,10 @@ and whether with one user or two, was not recorded.
 One defect came out of it, the kind only rendering shows: the family list had
 its hint under the heading and the personal list has no hint, so the family
 list started a line lower than the one beside it. The hint moved below the
-list; released as 1.1.1. The owner has not yet looked at the fix.
+list; released as 1.1.1.
+
+The owner then asked for the hint beside the «Семейные» heading instead, which
+is 1.1.2. It shares the heading's line, so it still cannot push the list down —
+provided it fits. The lists therefore sit side by side only from `lg`; between
+`md` and `lg` the hint would wrap and bring the misalignment back. The owner
+has not yet looked at 1.1.2.

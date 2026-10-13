@@ -19,7 +19,7 @@ truth about the code.
 | [Settings](settings.md) | Category tree, password, user creation | **Done** |
 | [Phase 8](phase-8-sharing.md) | Per-resource read-only sharing between members | **Done** |
 | [Phase 9](phase-9-planned-purchases.md) | Planned purchases («Покупки») — a personal and a family shopping list | **Done** — used in a browser by the owner, 2026-10-13 |
-| [Deployment](deployment.md) | The image, its version tag, what has been deployed | **1.1.1 running** since 2026-10-13 |
+| [Deployment](deployment.md) | The image, its version tag, what has been deployed | **1.1.2 running** since 2026-10-13 |
 
 Phase 6's net worth dashboard is out of scope; its transaction export is built
 and is logged under Phase 0 + 1, since it lives on the transactions page.

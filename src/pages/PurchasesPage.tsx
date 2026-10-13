@@ -171,7 +171,10 @@ export function PurchasesPage() {
           item, the other says it is empty under its own heading. */}
       <QueryState query={purchases} empty={strings.purchases.none}>
         {(items: PlannedPurchase[]) => (
-          <div className="grid items-start gap-6 md:grid-cols-2">
+          // Side by side only from `lg`: narrower than that the family hint
+          // no longer fits beside its heading, wraps, and pushes that list
+          // down out of line with the other.
+          <div className="grid items-start gap-6 lg:grid-cols-2">
             <PurchaseList
               title={strings.purchases.mine}
               empty={strings.purchases.noneMine}
