@@ -406,3 +406,21 @@ export interface ApiErrorBody {
   /** Omitted entirely when empty — the DTO is @JsonInclude(NON_EMPTY). */
   fieldErrors?: Record<string, string>
 }
+
+/**
+ * Something to buy. Deliberately not part of the ledger: no amount, date or
+ * category, and marking it bought creates no transaction.
+ *
+ * Every item the list returns is the caller's to change. A family item is
+ * everyone's; a personal one is only ever sent to whoever added it.
+ */
+export interface PlannedPurchase {
+  id: string
+  name: string
+  /** Fixed at creation — moving between the lists is delete and add again. */
+  isFamily: boolean
+  isBought: boolean
+  addedBy: UserRef
+  /** An instant, not a date — unlike `occurredOn` on a transaction. */
+  createdAt: string
+}

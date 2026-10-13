@@ -14,6 +14,7 @@ import type {
   MarketRate,
   MarketRefreshResult,
   MonthlySummary,
+  PlannedPurchase,
   Topic,
   TopicDetail,
   TradeSide,
@@ -403,4 +404,23 @@ export const sharedResourcesApi = {
     request<Budget[]>(`${V1}/budgets`, { query: { month, scope: 'SHARED' } }),
   bills: () => request<Bill[]>(`${V1}/bills`, { query: { scope: 'SHARED' } }),
   topics: () => request<Topic[]>(`${V1}/topics`, { query: { scope: 'SHARED' } }),
+}
+
+export const plannedPurchasesApi = {
+  /**
+   * The caller's personal items plus every family item, whoever added it.
+   * Still-to-buy first, then newest first — keep the server's order. Bought
+   * items stay until deleted.
+   */
+  list: () => request<PlannedPurchase[]>(`${V1}/planned-purchases`),
+  /** `isFamily` defaults to false server-side. The name is trimmed there. */
+  create: (body: { name: string; isFamily: boolean }) =>
+    request<PlannedPurchase>(`${V1}/planned-purchases`, { method: 'POST', body }),
+  /**
+   * 404 on a family item someone else already deleted, as well as on an id
+   * that isn't the caller's. `isFamily` is not accepted here.
+   */
+  update: (id: string, body: { name?: string; isBought?: boolean }) =>
+    request<PlannedPurchase>(`${V1}/planned-purchases/${id}`, { method: 'PATCH', body }),
+  remove: (id: string) => request<void>(`${V1}/planned-purchases/${id}`, { method: 'DELETE' }),
 }
