@@ -17,6 +17,7 @@ rather than repeating it.
 | [Phase 7 — Topics («События»)](phase-7-topics.md) | A lens over the ledger | Built |
 | [Settings](settings.md) | Category tree, password, user creation | Built |
 | [Phase 8 — Sharing](phase-8-sharing.md) | Per-resource read-only sharing between members | Built |
+| [Phase 9 — Planned purchases («Покупки»)](phase-9-planned-purchases.md) | A shopping list, personal and family, outside the ledger | Built |
 | [Parked — phase 6, and the rest of 5](later/phases-5-6-parked.md) | Net worth; allocation chart. Phase 6's transaction export is built — see 00 | Out of scope |
 
 Phase 3 was dropped before any work started — loans and mortgages are ordinary

@@ -203,6 +203,7 @@ screen; everything else is drill-down.
 | `/topics`          | «События» — undertakings with their totals                       |
 | `/topics/:id`      | one event: figures, category breakdown, attached transactions    |
 | `/investments`     | holdings across your own broker and crypto accounts, at purchase cost, grouped by currency — see `phase-5-investments.md` |
+| `/purchases`       | «Покупки» — a shopping list, personal and family; not part of the ledger — see `phase-9-planned-purchases.md` |
 
 Charts (Recharts) appear on the dashboard, `/budgets` and `/topics/:id`:
 spending by category, and budget usage vs. limit. Deliberately few — the
