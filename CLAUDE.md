@@ -13,8 +13,10 @@ user in practice, talks to a Spring Boot/Kotlin backend.
   Its DTOs at `src/main/kotlin/com/familyfinance/crm/dto/` are the authoritative
   API contract and outrank both docs. `service/*Impl.kt` answers "what blocks
   this action". Its `.claude/requirements/` holds the backend phase docs.
-- Backend phases 0/1, 2, 4 and 7 are built. Phases 5–6 are out of scope;
-  phase 3 was dropped.
+- Phases 0/1, 2, 4, 5, 7 and 8 are built, here and in the backend, along with
+  phase 6's transaction export. The rest of phase 6 (net worth) and phase 5's
+  allocation chart are parked — see `.claude/requirements/later/`. Phase 3 was
+  dropped.
 
 ## Commands
 
