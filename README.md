@@ -1,32 +1,44 @@
-# React + TypeScript + Vite
+# Family Finance CRM — frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React SPA for a self-hosted family finance tracker. Russian-only UI. It talks
+to a Spring Boot/Kotlin backend that lives in its own repository,
+`koldassovnt/family-finance-crm`.
 
-Currently, two official plugins are available:
+## Develop
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+cp .env.example .env    # VITE_API_BASE_URL, default http://localhost:8080
+npm install
+npm run dev             # Vite dev server
+npm run build           # tsc -b && vite build
+npm run lint            # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The backend allows all origins and auth is a bearer token, so the dev server
+needs no proxy.
+
+## Deploy
+
+The app runs as one Docker image: nginx serves the build on port 80 and proxies
+`/api/` to the backend container, so start the backend stack first.
+
+1. Raise the number in `VERSION` (plain `MAJOR.MINOR.PATCH`). Every deploy gets
+   a new one.
+2. Run `./deploy.ps1`. If PowerShell refuses to run scripts:
+   `powershell -ExecutionPolicy Bypass -File .\deploy.ps1`.
+
+The script copies the version into `.env` and runs
+`docker compose up -d --build`, which builds and starts
+`family-finance-web:<version>`. `docker compose ps` shows the running version
+in the IMAGE column.
+
+To roll back, set `VERSION` in `.env` to an older tag that is still on the
+host (`docker images family-finance-web`) and run `docker compose up -d`,
+without `--build` and without the script.
+
+## Where things are written down
+
+- `CLAUDE.md` — layout, commands and the rules that are easy to get wrong.
+- `.claude/requirements/` — the spec, split by phase.
+- `docs/progress/` — what was actually built, verified and deployed.
+- `TODO.md` — open items outside any phase.
