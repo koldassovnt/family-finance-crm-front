@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { isTelegramUsername } from '@/lib/telegram'
 import { strings } from '@/strings'
 
 const MIN_LENGTH = 8
@@ -34,16 +35,27 @@ export function UsersPage() {
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
+  const [telegram, setTelegram] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
+  const telegramInvalid = telegram.trim() !== '' && !isTelegramUsername(telegram)
+
   const mutation = useMutation({
-    mutationFn: () => usersApi.create({ email, displayName, password }),
+    // Optional on create: left blank, the field is omitted rather than sent empty.
+    mutationFn: () =>
+      usersApi.create({
+        email,
+        displayName,
+        password,
+        telegramUsername: telegram.trim() === '' ? undefined : telegram.trim(),
+      }),
     onSuccess: (user) => {
       void queryClient.invalidateQueries({ queryKey: ['users'] })
       toast.success(`${strings.users.created}: ${user.displayName}`)
       setEmail('')
       setDisplayName('')
       setPassword('')
+      setTelegram('')
       setFieldErrors({})
     },
     onError: (error) => {
@@ -70,6 +82,11 @@ export function UsersPage() {
                 <li key={member.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
                   <span className="font-medium">{member.displayName}</span>
                   <span className="truncate text-sm text-muted-foreground">{member.email}</span>
+                  {member.telegramUsername !== null && (
+                    <span className="truncate text-sm text-muted-foreground">
+                      {member.telegramUsername}
+                    </span>
+                  )}
                   <span className="ms-auto flex shrink-0 items-center gap-2">
                     {member.id === me?.id && (
                       <span className="text-xs text-muted-foreground">{strings.users.you}</span>
@@ -134,10 +151,30 @@ export function UsersPage() {
           )}
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="user-telegram">{strings.users.telegram}</Label>
+          <Input
+            id="user-telegram"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder={strings.profile.telegramPlaceholder}
+            value={telegram}
+            onChange={(event) => setTelegram(event.target.value)}
+          />
+          {telegramInvalid && (
+            <p className="text-sm text-destructive">{strings.profile.telegramInvalid}</p>
+          )}
+          {fieldErrors.telegramUsername !== undefined && (
+            <p className="text-sm text-destructive">{fieldErrors.telegramUsername}</p>
+          )}
+        </div>
+
         <Button
           type="submit"
           disabled={
             mutation.isPending ||
+            telegramInvalid ||
             email.trim() === '' ||
             displayName.trim() === '' ||
             password.length < MIN_LENGTH

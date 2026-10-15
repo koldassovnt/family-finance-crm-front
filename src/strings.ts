@@ -134,6 +134,7 @@ export const strings = {
     email: 'Электронная почта',
     displayName: 'Имя',
     password: 'Пароль',
+    telegram: 'Имя в Telegram (необязательно)',
     /** The endpoint can only create MEMBER; OWNER is rejected. */
     roleHint: 'Новый пользователь получает роль «Член семьи»',
     created: 'Пользователь создан',
