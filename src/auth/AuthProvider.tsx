@@ -13,6 +13,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(nextUser)
   }, [])
 
+  const updateUser = useCallback<AuthContextValue['updateUser']>((nextUser) => {
+    setUser(nextUser)
+  }, [])
+
   const signOut = useCallback(() => {
     // Logout is purely client-side; there is no server-side revocation.
     tokenStorage.clear()
@@ -46,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isLoading, signIn, signOut }),
-    [user, isLoading, signIn, signOut],
+    () => ({ user, isLoading, signIn, updateUser, signOut }),
+    [user, isLoading, signIn, updateUser, signOut],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

@@ -10,7 +10,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { GoalsPage } from '@/pages/GoalsPage'
 import { InvestmentsPage } from '@/pages/InvestmentsPage'
 import { LoginPage } from '@/pages/LoginPage'
-import { PasswordPage } from '@/pages/PasswordPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { PurchasesPage } from '@/pages/PurchasesPage'
 import { SharedPage } from '@/pages/SharedPage'
 import { TopicDetailPage } from '@/pages/TopicDetailPage'
@@ -39,7 +39,9 @@ export const router = createBrowserRouter([
           { path: '/purchases', element: <PurchasesPage /> },
           { path: '/shared', element: <SharedPage /> },
           { path: '/settings/categories', element: <CategoriesPage /> },
-          { path: '/settings/password', element: <PasswordPage /> },
+          { path: '/settings/profile', element: <ProfilePage /> },
+          // The page was password-only before the Telegram username joined it.
+          { path: '/settings/password', element: <Navigate to="/settings/profile" replace /> },
           {
             element: <RequireOwner />,
             children: [{ path: '/settings/users', element: <UsersPage /> }],

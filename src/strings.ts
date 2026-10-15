@@ -99,6 +99,21 @@ export const strings = {
     empty: 'Категорий пока нет',
   },
 
+  profile: {
+    title: 'Профиль',
+    telegramTitle: 'Telegram',
+    telegram: 'Имя пользователя в Telegram',
+    telegramPlaceholder: '@username',
+    /** An empty input sends null, which clears it. */
+    telegramHint: 'По нему вас узнаёт Telegram-бот. Оставьте поле пустым, чтобы убрать',
+    /** Telegram's own rule, enforced by the backend too. */
+    telegramInvalid: 'От 5 до 32 латинских букв, цифр или знаков подчёркивания',
+    /** 409: another user holds it, compared ignoring case. */
+    telegramTaken: 'Это имя уже указано у другого пользователя',
+    telegramSaved: 'Имя в Telegram сохранено',
+    telegramCleared: 'Имя в Telegram удалено',
+  },
+
   password: {
     title: 'Смена пароля',
     current: 'Текущий пароль',

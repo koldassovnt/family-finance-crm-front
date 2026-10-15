@@ -6,6 +6,8 @@ export interface AuthContextValue {
   /** False while identity is being re-established from a stored token. */
   isLoading: boolean
   signIn: (token: string, expiresAt: string, user: User) => void
+  /** Replaces the signed-in user after editing your own account; the token stays. */
+  updateUser: (user: User) => void
   signOut: () => void
 }
 

@@ -60,7 +60,7 @@ export function AppLayout() {
           </nav>
           <div className="ms-auto flex items-center gap-2">
             <NavLink
-              to="/settings/password"
+              to="/settings/profile"
               className="text-sm text-muted-foreground underline-offset-4 hover:underline"
             >
               {user?.displayName}
