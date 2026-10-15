@@ -25,14 +25,35 @@ Phase 0/1, so they are grouped here by where they live in the UI.
   transactions **never** block a delete — they keep the category and keep
   rendering its name, so deleting only removes it from the pickers.
 
-## `/settings/password`
+## `/settings/profile` — «Профиль»
+
+Your own account, any role. Reachable from the display name in the header.
+`/settings/password`, its old address, redirects here.
+
+### Telegram username
+
+Added in backend 1.5.0 (commit 8c9aff0) for a Telegram bot that will know
+people by their username. How the bot authenticates is not decided and is not
+part of this screen.
+
+- `PATCH /api/v1/users/me` with `{"telegramUsername": …}` edits only the
+  caller and returns the updated user. The server trims the input and accepts
+  it with or without the "@"; it always **stores and returns it with the "@"**.
+- **An empty input sends `null`, which clears it.** A body without the field
+  changes nothing.
+- 400 `VALIDATION_FAILED` with `fieldErrors.telegramUsername` unless it is 5–32
+  of `A-Z a-z 0-9 _` (Telegram's own rule). Check the same rule before sending.
+- 409 `CONFLICT` when another user already holds it, compared ignoring case.
+  Show it under the field.
+- Saving keeps the session, so replace the signed-in user with the response.
+
+### Password
 
 - `POST /api/v1/users/me/password` returns 204.
 - **A successful change is a logout.** It moves `passwordChangedAt` forward and
   the JWT filter rejects every token issued before it — including the one making
   the call. Sign out and return to login rather than leaving the user on a
   screen whose next request 401s.
-- Reachable from the display name in the header.
 
 ## `/settings/users`
 
@@ -43,3 +64,6 @@ Phase 0/1, so they are grouped here by where they live in the UI.
   rejects a request for `OWNER`.
 - The route is gated client-side for convenience only — the server returns 403
   `FORBIDDEN` to a `MEMBER` regardless, and that is the real boundary.
+- **The Telegram username is optional on create**, on the same terms as on the
+  profile page. Leave it out of the request when blank. A 409 here can mean the
+  email or the username is taken.

@@ -6,8 +6,11 @@ cover endpoints spread across Phase 0/1 — so they get their own file.
 ## Built
 
 - **`/settings/categories`** — the tree, create/edit/delete.
-- **`/settings/password`** — change your own password.
-- **`/settings/users`** — `OWNER`-only, create-only.
+- **`/settings/profile`** («Профиль») — your own Telegram username and
+  password. It replaced the password-only `/settings/password`, which now
+  redirects here.
+- **`/settings/users`** — `OWNER`-only, create-only. The form takes an optional
+  Telegram username, and the household list shows each member's.
 
 ## Decisions worth remembering
 
@@ -41,3 +44,6 @@ cover endpoints spread across Phase 0/1 — so they get their own file.
   server message; neither block has been triggered from the UI.
 - Changing a password has not been exercised — doing so would invalidate the
   seeded credentials everything else is tested with.
+- The Telegram username (backend 1.5.0, added 2026-10-15) has only passed
+  `tsc -b`, `vite build` and lint, all in the Dockerfile's build stage. It has
+  not been run against the backend or used in a browser, and is not deployed.

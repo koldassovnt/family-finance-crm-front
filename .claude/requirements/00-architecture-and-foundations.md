@@ -157,7 +157,8 @@ All confirmed, not placeholders.
       `expiresAt` too, so the UI can warn before a 30-day token lapses instead
       of discovering it through a 401 mid-action.
     - **Role comes from the API, never from decoding the JWT.** `user` is
-      `{id, email, displayName, role}` with role `OWNER` or `MEMBER`, and
+      `{id, email, displayName, role, telegramUsername}` with role `OWNER` or
+      `MEMBER` and a nullable, "@"-prefixed `telegramUsername`, and
       `GET /api/v1/users/me` returns the same shape for a client that has a
       stored token but no user in memory after a reload — so identity is
       re-fetchable and doesn't have to be persisted alongside the token. The
@@ -198,7 +199,7 @@ screen; everything else is drill-down.
 | `/goals`           | goal cards with progress                                         |
 | `/bills`           | month calendar + batch-create                                    |
 | `/settings/categories` | category management (tree)                                   |
-| `/settings/password` | change your own password — `POST /api/v1/users/me/password`, any role |
+| `/settings/profile` | your own account, any role: Telegram username (`PATCH /api/v1/users/me`) and password (`POST /api/v1/users/me/password`). `/settings/password` redirects here |
 | `/settings/users`  | `OWNER` only — create additional users (unused while single-user). Create-only: `GET /api/v1/users/me` returns just the caller and there is no list-users endpoint, so don't design a user table |
 | `/topics`          | «События» — undertakings with their totals                       |
 | `/topics/:id`      | one event: figures, category breakdown, attached transactions    |
