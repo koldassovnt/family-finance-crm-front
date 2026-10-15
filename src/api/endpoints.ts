@@ -41,8 +41,19 @@ export const usersApi = {
    * the share picker, which everyone has, not just OWNER.
    */
   list: () => request<User[]>(`${V1}/users`),
-  create: (body: { email: string; displayName: string; password: string }) =>
-    request<User>(`${V1}/users`, { method: 'POST', body }),
+  create: (body: {
+    email: string
+    displayName: string
+    password: string
+    telegramUsername?: string
+  }) => request<User>(`${V1}/users`, { method: 'POST', body }),
+  /**
+   * Your own account only, any role. The server accepts the username with or
+   * without its "@" and trims it; `null` clears it, an absent field leaves it.
+   * 409 `CONFLICT` when another user already holds it, compared ignoring case.
+   */
+  updateMe: (body: { telegramUsername?: string | null }) =>
+    request<User>(`${V1}/users/me`, { method: 'PATCH', body }),
   /** 204, and invalidates the token making the call. */
   changePassword: (body: { currentPassword: string; newPassword: string }) =>
     request<void>(`${V1}/users/me/password`, { method: 'POST', body }),

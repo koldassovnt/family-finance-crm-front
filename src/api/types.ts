@@ -27,6 +27,11 @@ export interface User {
   email: string
   displayName: string
   role: UserRole
+  /**
+   * Always stored with its leading "@" («@owner_tg»); null when unset. A
+   * Telegram bot will identify people by it.
+   */
+  telegramUsername: string | null
 }
 
 export type ShareResourceType = 'ACCOUNT' | 'GOAL' | 'BUDGET' | 'BILL' | 'TOPIC'
