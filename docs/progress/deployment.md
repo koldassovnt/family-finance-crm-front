@@ -19,6 +19,7 @@ How the app is built and run on the home server, and what has been deployed.
 | 1.1.0 | 2026-10-13 | The «Покупки» page (phase 9, planned purchases). |
 | 1.1.1 | 2026-10-13 | The two lists on «Покупки» start at the same height. |
 | 1.1.2 | 2026-10-13 | The family hint moved onto its heading's line, at the owner's request. |
+| 1.2.0 | 2026-10-15 | The «Профиль» page with the Telegram username, and the optional username on the create-member form. Needs backend 1.5.0. |
 
 Add a row per deploy. The version in `VERSION` is raised **before** the deploy,
 never reused.

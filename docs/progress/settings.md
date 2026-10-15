@@ -45,5 +45,7 @@ cover endpoints spread across Phase 0/1 — so they get their own file.
 - Changing a password has not been exercised — doing so would invalidate the
   seeded credentials everything else is tested with.
 - The Telegram username (backend 1.5.0, added 2026-10-15) has only passed
-  `tsc -b`, `vite build` and lint, all in the Dockerfile's build stage. It has
-  not been run against the backend or used in a browser, and is not deployed.
+  `tsc -b`, `vite build` and lint, all in the Dockerfile's build stage. It is
+  deployed in 1.2.0, where the bundle carries the field and `PATCH /users/me`
+  answers 401 without a token through the proxy. It has not been used in a
+  browser, so neither saving, clearing nor the 409 has been seen working.
